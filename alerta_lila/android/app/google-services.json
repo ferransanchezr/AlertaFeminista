@@ -1,0 +1,73 @@
+{
+  "project_info": {
+    "project_number": "190736575394",
+    "firebase_url": "https://alerta-feminista.firebaseio.com",
+    "project_id": "alerta-feminista",
+    "storage_bucket": "alerta-feminista.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:190736575394:android:fa16cb1add9f08da",
+        "android_client_info": {
+          "package_name": "com.divyamjoshiflutter.flutterfirebase"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "190736575394-pegq2dkgt93r1804it6hgn83m6uchkpc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuWKzh0amo3gB94bw59s_8gd0MeM5PSIk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:190736575394:android:bd79c1561b1eeef1",
+        "android_client_info": {
+          "package_name": "com.example.alerta_lila"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "190736575394-pegq2dkgt93r1804it6hgn83m6uchkpc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBuWKzh0amo3gB94bw59s_8gd0MeM5PSIk"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
