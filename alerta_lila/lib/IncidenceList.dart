@@ -1,18 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'authUser.dart';
 import 'database.dart';
 import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
-import 'IncidenceList.dart';
-import 'RealTimeLocation.dart';
-import 'chat.dart';
 
-void main() => runApp(MyApp());
+void main() => runApp(List());
 
-class MyApp extends StatelessWidget {
+class List extends StatelessWidget {
 
 void initState(){
    
@@ -75,10 +71,10 @@ class MyHomePage extends StatefulWidget {
   
   
   @override
-  _MyHomePageState createState() => _MyHomePageState();
+  IncidenceList createState() => IncidenceList();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class IncidenceList extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
@@ -106,77 +102,20 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
         appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(DemoLocalizations.of(context).trans('title')),
-      ),
-    body: Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          IconButton(
-            icon: Icon(Icons.notifications_active),
-            tooltip: DemoLocalizations.of(context).trans('alert_button') ,
-            onPressed: () {
-              _createIncident();
-            },
-          ),
-          RaisedButton(
-            child: const Text('DEMO DB'),
-            color: Theme.of(context).accentColor,
-            elevation: 4.0,
-            splashColor: Colors.blueGrey,
-            onPressed: () {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => List()),
-                );
-              // Perform some action
-            },
-          ),RaisedButton(
-            child: const Text('Demo Log in'),
-            color: Theme.of(context).accentColor,
-            elevation: 4.0,
-            splashColor: Colors.blueGrey,
-            onPressed: () {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => LoginPage()),
-                );
-              // Perform some action
-            },
-          ),
-          RaisedButton(
-            child: const Text('Demo Location'),
-            color: Theme.of(context).accentColor,
-            elevation: 4.0,
-            splashColor: Colors.blueGrey,
-            onPressed: () {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => RealTimeLocation()),
-                );
-              // Perform some action
-            },
-          ),
-               RaisedButton(
-            child: const Text('Demo Chat'),
-            color: Theme.of(context).accentColor,
-            elevation: 4.0,
-            splashColor: Colors.blueGrey,
-            onPressed: () {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => chatPage()),
-                );
-              // Perform some action
-            },
-          ),
-          Text(DemoLocalizations.of(context).trans('alert_button') )
-        ],
-      ),
-    ),
-  );
+          title: Text("sdas"),
+        ),
+        body:  StreamBuilder(
+                stream: Firestore.instance.collection('myapp').snapshots() ,
+                builder: (context,snapshot){
+                  if(!snapshot.hasData) return Text("loading data");
+
+                  return Column(children: <Widget>[ Text(snapshot.data.documents[0]['name']),
+                    ],
+                    );
+                },
+              ),
+        
+      );
     
   }
 }
