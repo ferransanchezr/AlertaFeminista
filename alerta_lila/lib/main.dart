@@ -9,7 +9,7 @@ import 'localizationDelegate.dart';
 import 'IncidenceList.dart';
 import 'RealTimeLocation.dart';
 import 'chat.dart';
-
+import 'userButton.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
@@ -142,6 +142,18 @@ class _MyHomePageState extends State<MyHomePage> {
                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              // Perform some action
+            },
+          ),RaisedButton(
+            child: const Text('Demo userButton'),
+            color: Theme.of(context).accentColor,
+            elevation: 4.0,
+            splashColor: Colors.blueGrey,
+            onPressed: () {
+               Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserButton()),
                 );
               // Perform some action
             },
