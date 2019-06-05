@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'authUser.dart';
 import 'database.dart';
 import 'localization.dart';
@@ -10,17 +11,27 @@ import 'IncidenceList.dart';
 import 'RealTimeLocation.dart';
 import 'chat.dart';
 import 'userButton.dart';
+import 'userProfile.dart';
+import 'authUser.1.dart';
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
 
 void initState(){
    
-      
+     //clearPrefs();
 
   }
+    clearPrefs() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+    
+       print("prefs Cleared");
+     
+      
+    }
   @override
   Widget build(BuildContext context) {
+  
     return MaterialApp(
        supportedLocales: [  
         const Locale('es', 'ES'),  
@@ -93,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
   void _createIncident(){
 
-      Database.createIncidence();
+      //Database.createIncidence();
   }
 
   @override
@@ -122,19 +133,7 @@ class _MyHomePageState extends State<MyHomePage> {
             },
           ),
           RaisedButton(
-            child: const Text('DEMO DB'),
-            color: Theme.of(context).accentColor,
-            elevation: 4.0,
-            splashColor: Colors.blueGrey,
-            onPressed: () {
-               Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => List()),
-                );
-              // Perform some action
-            },
-          ),RaisedButton(
-            child: const Text('Demo Log in'),
+            child: const Text('DEMO APP'),
             color: Theme.of(context).accentColor,
             elevation: 4.0,
             splashColor: Colors.blueGrey,
@@ -142,6 +141,18 @@ class _MyHomePageState extends State<MyHomePage> {
                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => LoginPage()),
+                );
+              // Perform some action
+            },
+          ),RaisedButton(
+            child: const Text('Cerrar Sesion'),
+            color: Theme.of(context).accentColor,
+            elevation: 4.0,
+            splashColor: Colors.blueGrey,
+            onPressed: () {
+               Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginPage2()),
                 );
               // Perform some action
             },
@@ -180,6 +191,19 @@ class _MyHomePageState extends State<MyHomePage> {
                Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => chatPage()),
+                );
+              // Perform some action
+            },
+          ),
+          RaisedButton(
+            child: const Text('Demo Profile'),
+            color: Theme.of(context).accentColor,
+            elevation: 4.0,
+            splashColor: Colors.blueGrey,
+            onPressed: () {
+               Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => UserProfile()),
                 );
               // Perform some action
             },

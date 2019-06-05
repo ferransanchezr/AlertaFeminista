@@ -6,18 +6,24 @@ import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'database.dart';
-import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
-import 'userButton.dart';
-import 'userProfile.dart';
+import 'RealTimeLocationAdmin.dart';
+import 'AdminuserProfile.dart';
+import 'IncidenceAdminList.dart';
 
-void main() => runApp(List());
+void main() => runApp(ActiveList());
 
-class List extends StatelessWidget {
-
+class ActiveList extends StatelessWidget {
+getUserId() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String uid = "";
+      uid = prefs.getString("user");
+      return uid ;
+  }
 void initState(){
-   
+  String uid = getUserId();
+   Database.getAdminName(uid);
       
 
   }
@@ -77,10 +83,10 @@ class MyHomePage extends StatefulWidget {
   
   
   @override
-  IncidenceList createState() => IncidenceList();
+  IncidenceActiveList createState() => IncidenceActiveList();
 }
 
-class IncidenceList extends State<MyHomePage> {
+class IncidenceActiveList extends State<MyHomePage> {
   int _counter = 0;
 
   void _incrementCounter() {
@@ -97,10 +103,10 @@ class IncidenceList extends State<MyHomePage> {
 
      // Database.createIncidence();
   }
-
+  int _selectedIndex = 1;
   @override
   Widget build(BuildContext context) {
-     int _selectedIndex = 1;
+   
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -117,23 +123,26 @@ class IncidenceList extends State<MyHomePage> {
                   if (!snapshot.hasData) return new Text('Loading...');
                   return new ListView(
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
-                      return new ListTile(
+                      
+                        return new ListTile(
                         leading: new Icon(Icons.error),
                         title: new Text('Incidencia'),
                         subtitle: new Text(document['name'] + ' | ' + document['created']),
-                        onLongPress: ()=>_assignIncidence(document['unique_id']),
+                        onLongPress: ()=>_assignIncidence(document.documentID),
                       );
+                      
+                      
                     }).toList(),
                   );
                 },
               ),
               bottomNavigationBar: BottomNavigationBar(
                 items: <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
-                  BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('alerta')),
+                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
+                  BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
-                currentIndex: _selectedIndex,
+                currentIndex: 1,
                 fixedColor: Colors.deepPurple,
                 onTap: _onItemTapped,
               ),
@@ -144,29 +153,25 @@ class IncidenceList extends State<MyHomePage> {
 
     void _onItemTapped(int index) {
     setState(() {
+      _selectedIndex = index;
       switch(index){
         case 0: {
-           Navigator.push(context,MaterialPageRoute(builder: (context) => List()),);
+           Navigator.push(context,MaterialPageRoute(builder: (context) => AdminList()),);
         }
         break;
         case 1: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => UserButton()),);
+         
         }
         break;
         case 2: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => UserProfile()),);
+          Navigator.push(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
         }
         break;
       }
       
     });
   }
-  getUserId() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String uid = "";
-      uid = prefs.getString("user");
-      return uid ;
-  }
+  
   _assignIncidence(String unique_id) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String id_admin = prefs.get("user");
@@ -178,5 +183,6 @@ class IncidenceList extends State<MyHomePage> {
     String name_admin = prefs.get("userName");
     prefs.setString("incidenceId",unique_id);
     Database.selectIncidence(id_admin, fecha_admin, latitude_admin.toString(), longitude_admin.toString(), name_admin, unique_id);
+    Navigator.push(context,MaterialPageRoute(builder: (context) => RealTimeLocationAdmin()),);
   }
 }

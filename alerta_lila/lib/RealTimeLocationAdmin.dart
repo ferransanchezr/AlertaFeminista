@@ -9,10 +9,10 @@ import 'package:threading/threading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
   
-void main() => runApp(RealTimeLocation());
+void main() => runApp(RealTimeLocationAdmin());
 
 
-class RealTimeLocation extends StatelessWidget {
+class RealTimeLocationAdmin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -35,103 +35,113 @@ class FireMap extends StatefulWidget {
 class FireMapState extends State<FireMap> {
   GoogleMapController mapController;
   final LocalStorage storage = new LocalStorage('uid');
-  var latitude = 40.453479;
+  var latitude = 50.453479;
   var longitude = -2.318524;
   Location location = new Location();
   Timer timer;
-  String nombreAdmin = "";
+  String nombreUser = "";
   String close = "";
   var finalDate;
+  SharedPreferences prefs ;
   @override
   initState() {
     super.initState();
-    getAdmin();
-    
+    //carga las prefs
+    getUser();
+    getLocation();
    
  
     var thread = new Thread(() async{
-        startTimer();
+        Database.getIncidenceState();
+        var open = prefs.get("state");
+        if(open == "true"){
+          startTimer();
+        }else{
+          finalDate = prefs.get("IncidentDate");
+        }
+      
+        
     });
    thread.start();
     
-  }
-  startTimer() async{
-    if (timer!=null){
-      timer.cancel();
-    }
-     const refreshTime = const Duration(seconds: 2);
-    timer = new Timer.periodic(
-      refreshTime,(timer){
-        getLocation();
-        getCounter();
-        
-      }
-    );
-  }
-     getUserId() async{
-     SharedPreferences prefs = await SharedPreferences.getInstance();
-      var uid = prefs.getString("user");
-      return uid ;
-    }
+  }//End init State
 
-    getAdmin() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var id = prefs.getString("user");
-       Database.getAdminName(id).then((nom){
-        if(nom!=null){
-          nombreAdmin = nom;
-         
-        }else{
-          nombreAdmin = "";
+  //Empezar Contador
+  startTimer() async{
+      if (timer!=null){
+        timer.cancel();
+      }
+      const refreshTime = const Duration(seconds: 2);
+      timer = new Timer.periodic(
+        refreshTime,(timer){
+          getLocation();
+          getCounter();
           
         }
-        
-      });
-     
-          
-    }
-    getCounter() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String incidenceData = prefs.getString("incidence_data");
-      var date = DateTime.parse(incidenceData);
-      var now = new DateTime.now();
-     
-      setState(() {
-         finalDate = now.difference(date).inSeconds;
-      });
-    }
-   
-    Future getLocation() async{
-     
-      var l = await location.getLocation().then((loc){
-          setState(() {
-           latitude = loc.latitude;
-        longitude = loc.longitude;
-      });
-      });
-      
-     
-      
-      var uid = await getUserId();
-      if(uid!=null){
-         Database.setLocation(latitude, longitude, uid);
-      }else{
-        //error
-      }
-     //getLocationDbData(uid);
-     mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
-        target : LatLng(latitude, longitude),zoom:15,
+      );
+  }
+     //obtener el user
+  getUserId() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var uid = prefs.getString("user");
+  return uid ;
+  }
+  //obtener nombre de la Usuaria
+  getUser() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString("user");
+      Database.getUserName(id);
+      nombreUser = prefs.getString("UserName");    
+  }
 
-      ))
-     ); 
+  //Obtener la Duración de la incidencia
+  getCounter() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String incidenceData = prefs.getString("incidence_data");
+    var date = DateTime.parse(incidenceData);
+    var now = new DateTime.now();
   
-    }
-  Future getLocationDbData(user)  async {
-      var location = [2];
-      location = await Database.getLocationData(user); 
-      
-     
-   }
+    setState(() {
+      finalDate = now.difference(date).inSeconds;
+    });
+  }
+  //obtener localización actual, guardarla en la bd y mostrar el nuevo mapa
+  Future getLocation() async{
+    var l = await location.getLocation();
+    latitude = l.latitude;
+    longitude = l.longitude;
+    //save location in database
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var uid = prefs.get("user");
+    Database.setLocation(latitude, longitude, uid);
+      //RECONSTRUCCION del mapa
+//  mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
+  //  target : LatLng(latitude, longitude),zoom:15,))
+  //); 
+      }//end GetLocation
+
+//Obtener la localizacion desde la incidencia
+Future getUserLocation(user)  async {
+    Database.getLocationData(user); 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      latitude =  prefs.getInt("lat_user").toDouble();
+      longitude = prefs.getInt("lon_user").toDouble();
+    });
+  }
+
+//Obtener la localizacion del admin desde la incidencia
+  Future getAdminLocation(user)  async {
+    
+    Database.getLocationData(user); 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      latitude =  prefs.getInt("lat_admin").toDouble();
+      longitude = prefs.getInt("lon_admin").toDouble();
+    });
+  }
+
+  //Generacion de la interface, UI
   @override
   build(context) {
    // getCounter();
@@ -158,7 +168,7 @@ class FireMapState extends State<FireMap> {
                     childAspectRatio: 3,
                 
                   // Generate 100 Widgets that display their index in the List
-                  children: <Widget>[leftSection,middleSection,new Text(nombreAdmin),new Text(finalDate.toString()), telefon, new Container(
+                  children: <Widget>[leftSection,middleSection,new Text(nombreUser),new Text(finalDate.toString()), telefon, new Container(
  
   child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);}
   ,)
@@ -176,7 +186,7 @@ class FireMapState extends State<FireMap> {
   }
 final leftSection = new Container(
   
-  child: new Text("Administradora")
+  child: new Text("Usuaria")
   );
 final middleSection = new Container(
  

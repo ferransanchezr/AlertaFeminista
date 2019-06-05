@@ -9,14 +9,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'userButton.dart';
 import 'IncidenceActiveList.dart';
 
-class LoginPage extends StatefulWidget {
+class LoginPage2 extends StatefulWidget {
   static String tag = 'login-page';
   @override
   _LoginPageState createState() => new _LoginPageState();
 
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage2> {
       TextEditingController emailController = new TextEditingController();
     TextEditingController passController = new TextEditingController();
 
@@ -28,15 +28,11 @@ class _LoginPageState extends State<LoginPage> {
 
     SharedPreferences prefs;
     Future<FirebaseUser> _handleSignIn(String email, String password) async {
-    final FirebaseUser currentUser = await auth.currentUser();
+    
     FirebaseUser user ;
-    if(currentUser!=null){
-         user = currentUser;
-    }else{
+  
      user = await auth.signInWithEmailAndPassword(email: email, password: password);
-    }
-    assert(user != null);
-    assert(await user.getIdToken() != null);
+  
 
     
 
@@ -81,19 +77,19 @@ class _LoginPageState extends State<LoginPage> {
       prefs = await SharedPreferences.getInstance();
        
     }
+     clearPrefs() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.clear();
+      final FirebaseAuth auth = FirebaseAuth.instance;
+      auth.signOut() ;
+
+       print("prefs Cleared");
+     
+      
+    }
     
-    _autoLogIn() {
-      _getPrefs().then((p){
-        
-      if(prefs.getString("user")!=null){
-          //cambiar por preferences stored in bd
-         // prefs.clear();
-          
-        _handleSignIn("", "");
-        }
-        });
-   }
-    _autoLogIn();
+   
+    clearPrefs();
     final email = TextFormField(
       controller: emailController,
       keyboardType: TextInputType.emailAddress,

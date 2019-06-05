@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'chatMessage.dart';
 import 'database.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatScreen extends StatefulWidget {
   @override
@@ -11,13 +12,26 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> {
   final TextEditingController _chatController = new TextEditingController();
   final List<ChatMessage> _messages = <ChatMessage>[];
-
+   String uniqueId;
+   String name;
+  _getPreferences() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      uniqueId = prefs.getString("incidenceId");
+    }
+  _getUserName() async{
+  _getPreferences();
+    name = await Database.getUserData(uniqueId);
+  }
   void _handleSubmit(String text) {
     _chatController.clear();
       ChatMessage message = new ChatMessage(
         text: text
     );
-    Database.createMessage(text);
+    //Future.wait(_getUserName());
+
+        Database.createMessage(text,name);
+  
+   
     setState(() {
        _messages.insert(0, message);
     });
@@ -52,14 +66,18 @@ class ChatScreenState extends State<ChatScreen> {
       ),
     );
   }
+ 
+
 
   @override
   Widget build(BuildContext context) {
+    _getPreferences();
+    
     return new Column(
         children: <Widget>[
           new Flexible(
             child: StreamBuilder(
-                stream: Firestore.instance.collection('myApp/Incidencias/Mensajes').snapshots() ,
+                stream: Firestore.instance.collection('Incidencias/$uniqueId/Mensajes').snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                   if (!snapshot.hasData) return new Text('Loading...');
                   return new ListView(
