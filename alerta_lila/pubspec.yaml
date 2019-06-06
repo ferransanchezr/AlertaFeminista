@@ -28,7 +28,7 @@ dependencies:
   cupertino_icons: ^0.1.2
   firebase_messaging: ^4.0.0+1
   firebase_database: ^3.0.0
-  cloud_firestore: ^0.11.0
+  cloud_firestore: ^0.12.2
   intl_translation: ^0.17.1
   firebase_auth: ^0.10.0
   google_sign_in: ^4.0.1+1
@@ -64,7 +64,7 @@ flutter:
     - resources/lang/cat.json
     - resources/lang/es.json
     - resources/lang/en.json
-  #  - images/a_dot_burr.jpeg
+    - resources/images/circle.png
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

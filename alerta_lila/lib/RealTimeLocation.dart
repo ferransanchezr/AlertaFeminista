@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:localstorage/localstorage.dart';
@@ -35,148 +36,232 @@ class FireMap extends StatefulWidget {
 class FireMapState extends State<FireMap> {
   GoogleMapController mapController;
   final LocalStorage storage = new LocalStorage('uid');
-  var latitude = 40.453479;
+  var latitude = 50.453479;
   var longitude = -2.318524;
+  var latitude_user = 50.453479;
+  var longitude_user = -2.318524;
   Location location = new Location();
   Timer timer;
-  String nombreAdmin = "";
+  String nombreUser = "";
   String close = "";
   var finalDate;
-  @override
+  String incidenceId = "";
+  SharedPreferences prefs ;
+  Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  MarkerId markerId = new MarkerId("prueba");
+  var markerIcon;
+  final Database _database = Database();
+  
+  @override   
   initState() {
     super.initState();
-    getAdmin();
-    
-   
+    //carga las prefs
+    getUser();
+    getLocation();
+   getUserLocation() ;
+   // getUserPrefLocation();
+  
  
     var thread = new Thread(() async{
-        startTimer();
+        prefs = await SharedPreferences.getInstance();
+        var open = prefs.get("state");
+        if(open == "true"){
+          startTimer();
+        }else{
+          finalDate = prefs.get("IncidentDate");
+        }
+      
+        
     });
    thread.start();
     
-  }
-  startTimer() async{
-    if (timer!=null){
-      timer.cancel();
-    }
-     const refreshTime = const Duration(seconds: 2);
-    timer = new Timer.periodic(
-      refreshTime,(timer){
-        getLocation();
-        getCounter();
-        
-      }
-    );
-  }
-     getUserId() async{
-     SharedPreferences prefs = await SharedPreferences.getInstance();
-      var uid = prefs.getString("user");
-      return uid ;
-    }
+  }//End init State
 
-    getAdmin() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      var id = prefs.getString("user");
-       Database.getAdminName(id).then((nom){
-        if(nom!=null){
-          nombreAdmin = nom;
+  //Empezar Contador
+  startTimer() async{
+      if (timer!=null){
+        timer.cancel();
+      }
+      const refreshTime = const Duration(seconds: 2);
+      timer = new Timer.periodic(
+        refreshTime,(timer){
+          getLocation();
          
-        }else{
-          nombreAdmin = "";
           
         }
-        
+      );
+  }
+     //obtener el user
+  getUserId() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  var uid = prefs.getString("user");
+  return uid ;
+  }
+  //obtener nombre de la Usuaria
+  getUser() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString("user");
+      Database.getUserName(id).then((user){
+        nombreUser = prefs.getString("adminName");
       });
-     
           
-    }
-    getCounter() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String incidenceData = prefs.getString("incidence_data");
-      var date = DateTime.parse(incidenceData);
-      var now = new DateTime.now();
-     
-      setState(() {
-         finalDate = now.difference(date).inSeconds;
-      });
-    }
-   
-    Future getLocation() async{
-     
-      var l = await location.getLocation().then((loc){
-          setState(() {
-           latitude = loc.latitude;
-        longitude = loc.longitude;
-      });
-      });
-      
-     
-      
-      var uid = await getUserId();
-      if(uid!=null){
-         Database.setLocation(latitude, longitude, uid);
-      }else{
-        //error
-      }
-     //getLocationDbData(uid);
-     mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
-        target : LatLng(latitude, longitude),zoom:15,
+  }
 
-      ))
-     ); 
+  //Obtener la Duración de la incidencia
+  getCounter() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String incidenceData = prefs.getString("IncidentData");
+    
+    var date = DateTime.parse(incidenceData);
+    var now = new DateTime.now();
   
-    }
-  Future getLocationDbData(user)  async {
-      var location = [2];
-      location = await Database.getLocationData(user); 
-      
+    setState(() {
+      finalDate = now.difference(date).inSeconds;
+    });
+  }
+  //Crear el pin en googleMaps
+  setMarker(){
+     markers[markerId] = new Marker(
+
+                      
+                      markerId: markerId,
+                      
+                      position: LatLng(
+                        latitude_user,longitude_user
+                      ),
+                      infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta es la posició de la usuaria amb l'incidencia"),
+                      onTap: ()=>{},
+                     
+                      
+                    );
+  }
+
+  //Obtener la fecha de la incidencia
+  getIncidenceDate(){
+   Database.getIncidenceDate();
+  }
+  //obtener localización actual, guardarla en la bd y mostrar el nuevo mapa
+  Future getLocation() async{
+    var l = await location.getLocation();
      
-   }
-  @override
-  build(context) {
-   // getCounter();
-    return new Row(
+          latitude = l.latitude;
+          longitude = l.longitude;
       
-      children: [
-        Expanded(child: Column(
-            children: <Widget>[
-              Expanded(
-                child: GoogleMap(
-              
-                initialCameraPosition: CameraPosition(target: LatLng( latitude ,longitude), zoom: 10),
-                compassEnabled: true,
-                onMapCreated: _onMapCreated,
-                myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
-                mapType: MapType.normal, 
-            
-                ),
-              ),
-              Expanded(
-                child: 
-                 GridView.count(
-                     crossAxisCount: 2,
-                    childAspectRatio: 3,
-                
-                  // Generate 100 Widgets that display their index in the List
-                  children: <Widget>[leftSection,middleSection,new Text(nombreAdmin),new Text(finalDate.toString()), telefon, new Container(
+  
+   
+    
+    //save location in database
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var uid = prefs.get("user");
+    setState(() {
+      incidenceId = prefs.get("incidenceId");
+    });
+    
+    
+    Database.setLocation(latitude, longitude, uid); 
+    Database.setIncidenceLocationAdmin(latitude, longitude, incidenceId);
+   // getUserLocation(incidenceId);
+    
+    }//end GetLocation
+
+//Obtener la localizacion desde la incidencia
+getUserLocation()  async {
+   SharedPreferences prefs = await SharedPreferences.getInstance(); 
+    Database.getIncidenceLocationAdmin().then((user){
+     
+         setState(() {
+        latitude_user =  double.parse(prefs.get("lat_admin"));
+        longitude_user = double.parse(prefs.get("lon_admin"));
+        setMarker();
+    });
+    });
+    
+   
+  }
+getUserPrefLocation()async{
+   
+  
+}
+
+//Obtener la localizacion del admin desde la incidencia
+  Future getAdminLocation(user)  async {
+    
+    Database.getLocationData(user); 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+      latitude =  prefs.getInt("lat_admin").toDouble();
+      longitude = prefs.getInt("lon_admin").toDouble();
+    });
+  }
  
-  child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);}
-  ,)
-  ) ],
-                  ),
-              
-              ),
-              
-        ],)
-        ,)
-       
+Widget _buildListItem(BuildContext context,DocumentSnapshot document){
+         return Row(
+            
+             children: [
+                       new Expanded(child: Column(
+                          children: <Widget>[
+                                  Expanded(
+                                    child: GoogleMap(
+                                  
+                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude']) ,double.parse(document['longitude'])), zoom: 10),
+                                    compassEnabled: false,
+                                    onMapCreated: _onMapCreated,
+                                    myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
+                                    mapType: MapType.normal, 
+                                    
+                                    markers:  Set<Marker>.of(markers.values),
+                                ),
+                              ),
+                             new Expanded(
+                                child: 
+                                GridView.count(
+                                    crossAxisCount: 2,
+                                    childAspectRatio: 3,
+                                
+                                  // Generate 100 Widgets that display their index in the List
+                                  children: [leftSection,middleSection,new Text(document['name_admin']),new Text(document['created']), telefon, new Container(
+                
+                            child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);}
+                            ,)
+                            ) ],
+                                            ),
+                                        
+                                        ),
+                                        
+                                  ],
+                                  ),
+                                  ),
+                       ],
+                       
+                     );
+
+}
+  //Generacion de la interface, UI
+  @override
+  Widget build(context) {
+   // getCounter();
+   return Scaffold(
+        appBar: AppBar(
+          title: Text("Incidencia"),
+        ),
+        body: StreamBuilder(
+                stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
+                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){  
+                    if (!snapshot.hasData) return new Text('Loading...');
+                    return new ListView.builder(
+                      itemExtent: 700.00,
+                      itemCount: snapshot.data.documents.length,
+                      itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
+                      );
+                 }),
+                    );
+
         
-      ]
-    );
+        
   }
 final leftSection = new Container(
   
-  child: new Text("Administradora")
+  child: new Text("Usuaria")
   );
 final middleSection = new Container(
  
@@ -208,6 +293,7 @@ final telefon = new Container(
 
       ))
       );
+      
     });
   }
  

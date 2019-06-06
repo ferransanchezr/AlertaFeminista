@@ -7,6 +7,7 @@ import 'RealTimeLocation.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'userButton.dart';
+import 'LoaduserButton.dart';
 import 'IncidenceActiveList.dart';
 
 class LoginPage extends StatefulWidget {
@@ -50,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
     prefs.setString("user",user.uid);
    
     
-     Route route = MaterialPageRoute(builder: (context) => UserButton());
+     Route route = MaterialPageRoute(builder: (context) => LoadUserButton());
      Route route2 = MaterialPageRoute(builder: (context) => ActiveList());
      Database.getAdmin();
      if(prefs.containsKey("admin")){

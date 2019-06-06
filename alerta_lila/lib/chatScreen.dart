@@ -14,14 +14,23 @@ class ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = <ChatMessage>[];
    String uniqueId;
    String name;
-  _getPreferences() async{
+   String path_message = 'Incidencias/temp';
+   _getPreferences() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       uniqueId = prefs.getString("incidenceId");
+      path_message = 'Incidencias/' + uniqueId + '/Mensajes';
     }
-  _getUserName() async{
-  _getPreferences();
+    _getUserName() async{
+  
     name = await Database.getUserData(uniqueId);
   }
+  @override
+  initState() {
+    _getPreferences();
+   
+  }
+  
+  
   void _handleSubmit(String text) {
     _chatController.clear();
       ChatMessage message = new ChatMessage(
@@ -71,15 +80,15 @@ class ChatScreenState extends State<ChatScreen> {
 
   @override
   Widget build(BuildContext context) {
-    _getPreferences();
+    
     
     return new Column(
         children: <Widget>[
           new Flexible(
             child: StreamBuilder(
-                stream: Firestore.instance.collection('Incidencias/$uniqueId/Mensajes').snapshots() ,
+                stream: Firestore.instance.collection(path_message).snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                  if (!snapshot.hasData) return new Text('Loading...');
+                  if (!snapshot.hasData) return new Text('No hi ha Missatges');
                   return new ListView(
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
                       return new ListTile(

@@ -10,18 +10,19 @@ import 'authUser.dart';
 import 'Database.dart';
 import 'RealTimeLocation.dart';
 import 'userProfile.dart';
+import 'userButton.dart';
 
-void main() => runApp(UserButton());
+void main() => runApp(LoadUserButton());
 
 
-class UserButton extends StatefulWidget {
-  UserButton({Key key}) : super(key: key);
+class LoadUserButton extends StatefulWidget {
+  LoadUserButton({Key key}) : super(key: key);
 
   @override
   _Button createState() => _Button();
 }
 
-class _Button extends State<UserButton> {
+class _Button extends State<LoadUserButton> {
   int _selectedIndex = 1;
   String id = "";
  
@@ -48,18 +49,7 @@ class _Button extends State<UserButton> {
         title: Text('Botó Alerta'),
       ),
       body:  Center(
-        child:new Container( 
-              width: 200.0,
-              height: 200.0,
-              child: new FloatingActionButton( 
-                backgroundColor: Colors.purple,
-                
-                child: Icon(Icons.add_alert,size:100.0),
-                
-
-                onPressed: _createIncident,
-              ),
-            ),
+        child:new Text("Carregant...")
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
@@ -85,27 +75,20 @@ class _Button extends State<UserButton> {
    
      String uid = "";
      String state = "";
-     SharedPreferences prefs = await SharedPreferences.getInstance();
-     
-      if(prefs.containsKey("incidenceId")){
-        uid = prefs.getString("incidenceId");
-        
-      }
-      if(uid !=null && uid!=""){
-        Database.getIncidenceState().then((option){
-        if(prefs.containsKey("state")){
-          state = prefs.get("state");
-          if(state=="true"){
-             Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-          }
-        }
-        });
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString("state","false");
+      await Database.getIncidenceOpen(uid).then((option) {
        
-       
+      state = prefs.get("state");
+      if(state == "true"){
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
+      }else if (state == "false"){
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));
       }
-   
-  
- }
+      });
+             
+    }
+ 
   void _onItemTapped(int index) {
     setState(() {
       switch(index){

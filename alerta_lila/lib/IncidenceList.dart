@@ -112,7 +112,7 @@ class IncidenceList extends State<MyHomePage> {
           title: Text("Historial d'Incidencias"),
         ),
         body:  StreamBuilder(
-                stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "true").snapshots() ,
+                stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                   if (!snapshot.hasData) return new Text('Loading...');
                   return new ListView(
