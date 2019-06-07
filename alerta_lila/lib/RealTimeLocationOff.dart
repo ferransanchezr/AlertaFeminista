@@ -10,10 +10,10 @@ import 'package:threading/threading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
   
-void main() => runApp(RealTimeLocation());
+void main() => runApp(RealTimeLocationOff());
 
 
-class RealTimeLocation extends StatelessWidget {
+class RealTimeLocationOff extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +43,14 @@ class FireMapState extends State<FireMap> {
   Location location = new Location();
   Timer timer;
   String nombreUser = "";
+  String nombreAdmin = "";
   String close = "";
   var finalDate;
   String incidenceId = "";
   SharedPreferences prefs ;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   MarkerId markerId = new MarkerId("prueba");
+  MarkerId markerId2 = new MarkerId("prueba2");
   var markerIcon;
   final Database _database = Database();
   
@@ -56,41 +58,23 @@ class FireMapState extends State<FireMap> {
   initState() {
     super.initState();
     //carga las prefs
-    getUser();
+    getPrefs();
     getLocation();
-   getUserLocation() ;
    // getUserPrefLocation();
   
  
-    var thread = new Thread(() async{
-        prefs = await SharedPreferences.getInstance();
-        var open = prefs.get("state");
-        if(open == "true"){
-          startTimer();
-        }else{
-          finalDate = prefs.get("IncidentDate");
-        }
-      
-        
-    });
-   thread.start();
     
   }//End init State
 
   //Empezar Contador
-  startTimer() async{
-      if (timer!=null){
-        timer.cancel();
-      }
-      const refreshTime = const Duration(seconds: 2);
-      timer = new Timer.periodic(
-        refreshTime,(timer){
-          getLocation();
-         
-          
-        }
-      );
-  }
+ getPrefs()async{
+   SharedPreferences prefs = await SharedPreferences.getInstance();
+    latitude = double.parse(prefs.get("lat_admin"));
+    longitude = double.parse(prefs.get("lon_admin"));
+    latitude_user = double.parse(prefs.get("lat_user"));
+    longitude_user = double.parse(prefs.get("lon_user"));
+    setMarker();
+ }
      //obtener el user
   getUserId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -98,11 +82,19 @@ class FireMapState extends State<FireMap> {
   return uid ;
   }
   //obtener nombre de la Usuaria
+  getAdmin() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString("user");
+      Database.getAdminName(id).then((user){
+        nombreAdmin = prefs.getString("adminName");
+      });
+          
+  }
   getUser() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var id = prefs.getString("user");
       Database.getUserName(id).then((user){
-        nombreUser = prefs.getString("adminName");
+        nombreUser = prefs.getString("UserName");
       });
           
   }
@@ -134,6 +126,19 @@ class FireMapState extends State<FireMap> {
                      
                       
                     );
+    markers[markerId] =  new Marker(
+
+                      
+                      markerId: markerId,
+                      
+                      position: LatLng(
+                        latitude_user,longitude_user
+                      ),
+                      infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta va ser la meva posició"),
+                      onTap: ()=>{},
+                     
+                      
+                    );
   }
 
   //Obtener la fecha de la incidencia
@@ -142,26 +147,12 @@ class FireMapState extends State<FireMap> {
   }
   //obtener localización actual, guardarla en la bd y mostrar el nuevo mapa
   Future getLocation() async{
-    var l = await location.getLocation();
-     
-          latitude = l.latitude;
-          longitude = l.longitude;
-      
-  
-   
-    
-    //save location in database
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var uid = prefs.get("user");
     setState(() {
       incidenceId = prefs.get("incidenceId");
     });
-    
-    
-    Database.setLocation(latitude, longitude, uid); 
-    Database.setIncidenceLocationAdmin(latitude, longitude, incidenceId);
-   // getUserLocation(incidenceId);
-    
+
     }//end GetLocation
 
 //Obtener la localizacion desde la incidencia
@@ -172,6 +163,7 @@ getUserLocation()  async {
          setState(() {
         latitude_user =  double.parse(prefs.get("lat_admin"));
         longitude_user = double.parse(prefs.get("lon_admin"));
+        
         setMarker();
     });
     });
@@ -184,14 +176,17 @@ getUserPrefLocation()async{
 }
 
 //Obtener la localizacion del admin desde la incidencia
-  Future getAdminLocation(user)  async {
+  Future getAdminLocation()  async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+      await Database.getIncidenceLocationUser().then((option){
+          setState(() {
+      latitude =  double.parse(prefs.getString("lat_user"));
+      longitude = double.parse(prefs.getString("lon_user"));
+      
+         });
+      }); 
+   
     
-    Database.getLocationData(); 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      latitude =  prefs.getInt("lat_admin").toDouble();
-      longitude = prefs.getInt("lon_admin").toDouble();
-    });
   }
  
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
@@ -204,9 +199,9 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                                     child: GoogleMap(
                                   
                                     initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude']) ,double.parse(document['longitude'])), zoom: 10),
-                                    compassEnabled: false,
+                                    compassEnabled: true,
                                     onMapCreated: _onMapCreated,
-                                    myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
+                                    myLocationEnabled: false, // Add little blue dot for device location, requires permission from user
                                     mapType: MapType.normal, 
                                     
                                     markers:  Set<Marker>.of(markers.values),
@@ -243,7 +238,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
    return Scaffold(
         appBar: AppBar(
           title: Text("Incidencia"),
-          backgroundColor: Colors.purpleAccent,
+           backgroundColor: Colors.purpleAccent,
         ),
         body: StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
@@ -291,8 +286,10 @@ final telefon = new Container(
       mapController = controller;
       mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
         target : LatLng(latitude, longitude),zoom:15,
+        
 
       ))
+      
       );
       
     });

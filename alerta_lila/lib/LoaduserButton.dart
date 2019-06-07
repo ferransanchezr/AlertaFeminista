@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'IncidenceActiveList.dart';
 import 'localizationDelegate.dart';
 import 'IncidenceList.dart';
 import 'authUser.dart';
@@ -36,6 +37,8 @@ class _Button extends State<LoadUserButton> {
   initState() {
     super.initState();
     getUserId();
+    Database.getAdmin();
+    
     _activeIncidence();
     
   }
@@ -70,22 +73,38 @@ class _Button extends State<LoadUserButton> {
       return uid ;
   }
  
- 
+
  Future<Null>  _activeIncidence() async{
    
      String uid = "";
      String state = "";
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setString("state","false");
-      await Database.getIncidenceOpen(uid).then((option) {
-       
-      state = prefs.get("state");
-      if(state == "true"){
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-      }else if (state == "false"){
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));
-      }
-      });
+     Route route2 = MaterialPageRoute(builder: (context) => ActiveList());
+     
+    
+       if(prefs.get("admin")=="true"){
+         
+              Navigator.pushReplacement(
+          context,
+          route2,
+          );
+          
+       }
+       else{
+          
+          
+          await Database.getIncidenceOpen(uid).then((option) {
+          Database.getIncidenceState();
+          state = prefs.get("state");
+          if(state == "true"){
+            //check if incendenceID exists 
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
+          }else if (state == "false"){
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));//que vaya a una de carga standard
+          }
+          });
+       }
              
     }
  

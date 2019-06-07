@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:localstorage/localstorage.dart';
@@ -8,6 +9,7 @@ import 'database.dart';
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
+import 'main.dart';
 import 'usuaria.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'userButton.dart';
@@ -80,7 +82,19 @@ class _MyHomePageState extends State<MyHomePage> {
       profile.imageUrl = await Database.downloadImage(id);
     
   }
-  
+  _signOut() async{
+    
+     final FirebaseAuth auth = FirebaseAuth.instance;
+     auth.signOut();
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     prefs.clear().then((onValue){
+       Navigator.pop(context);
+        
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => MyApp()),);
+        
+     });
+     
+  }
   @override
   initState() {
     super.initState();
@@ -111,7 +125,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       child: new Container(
       decoration: BoxDecoration(
-      color:  Colors.blue.withOpacity(0.9),
+      color:  Colors.purpleAccent.withOpacity(0.9),
       borderRadius: BorderRadius.all(Radius.circular(50.0)),
       ),)),
       new Scaffold(
@@ -120,8 +134,17 @@ class _MyHomePageState extends State<MyHomePage> {
             centerTitle: false,
             elevation: 0.0,
             backgroundColor: Colors.transparent,
+            actions: <Widget>[
+            // action button
+            IconButton(
+              icon: Icon(Icons.power_settings_new),
+              onPressed: () {
+                _signOut();
+              },
+            ),
+            ],
           ),
-          drawer: new Drawer(child: new Container(),),
+          
           backgroundColor: Colors.transparent,
           body: new Center(
             child: new Column(
@@ -146,9 +169,9 @@ class _MyHomePageState extends State<MyHomePage> {
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
                   BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('alerta')),
-                  BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('School')),
+                  BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
-                currentIndex: _selectedIndex,
+                currentIndex: 2,
                 fixedColor: Colors.deepPurple,
                 onTap: _onItemTapped,
               ),
@@ -161,15 +184,15 @@ void _onItemTapped(int index) {
       
       switch(index){
         case 0: {
-           Navigator.push(context,MaterialPageRoute(builder: (context) => List()),);
+           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => List()),);
         }
         break;
         case 1: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => UserButton()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserButton()),);
         }
         break;
         case 2: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => UserProfile()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserProfile()),);
         }
         break;
       }

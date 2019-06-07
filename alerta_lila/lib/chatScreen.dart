@@ -18,7 +18,10 @@ class ChatScreenState extends State<ChatScreen> {
    _getPreferences() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       uniqueId = prefs.getString("incidenceId");
-      path_message = 'Incidencias/' + uniqueId + '/Mensajes';
+     
+     setState(() {
+       path_message = 'Incidencias/' + uniqueId + '/Mensajes';
+     }); 
     }
     _getUserName() async{
   
@@ -48,14 +51,14 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget _chatEnvironment (){
     return IconTheme(
-      data: new IconThemeData(color: Colors.blue),
+      data: new IconThemeData(color: Colors.purple[200]),
           child: new Container(
         margin: const EdgeInsets.symmetric(horizontal:8.0),
         child: new Row(
           children: <Widget>[
             new Flexible(
               child: new TextField(
-                decoration: new InputDecoration.collapsed(hintText: "Start typing ..."),
+                decoration: new InputDecoration.collapsed(hintText: "Escriu Aquí..."),
                 controller: _chatController,
                 onSubmitted: _handleSubmit,
               ),
@@ -91,11 +94,23 @@ class ChatScreenState extends State<ChatScreen> {
                   if (!snapshot.hasData) return new Text('No hi ha Missatges');
                   return new ListView(
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
-                      return new ListTile(
-                        leading: new Icon(Icons.verified_user),
-                        title: new Text('mensaje'),
-                        subtitle: new Text(document['value']),
-                      );
+                      if(document['admin']== "true"){
+                          return Container(color: Colors.purple[200],
+                          child: ListTile(
+                          leading: new Icon(Icons.pan_tool),
+                          title: new Text(document['value']),
+                          subtitle: new Text(document['name']),
+                      ),
+                       );
+                      }else{
+                      return Container(color: Colors.white,
+                          child: ListTile(
+                          leading: new Icon(Icons.person),
+                          title: new Text(document['value']),
+                          subtitle: new Text(document['name']),
+                      ),
+                       );
+                      }
                     }).toList(),
                   );
                 },

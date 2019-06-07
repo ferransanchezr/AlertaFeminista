@@ -12,7 +12,8 @@ class chatPage extends StatelessWidget {
      return new Scaffold(
       
       appBar: new AppBar(
-        title: new Text("Chat de Emergencia"),
+        title: new Text("Chat d'Emergencia"),
+        backgroundColor: Colors.purpleAccent,
       ),
       body: new ChatScreen()
       
@@ -31,7 +32,4 @@ scafoold(){
       body: new ChatScreen()
       
     );
-}
-_onBackPress(context){
-  Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
 }

@@ -9,11 +9,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threading/threading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
+import 'RealTimeLocationOff.dart';
   
-void main() => runApp(RealTimeLocation());
+void main() => runApp(RealTimeLocationLoad());
 
 
-class RealTimeLocation extends StatelessWidget {
+class RealTimeLocationLoad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +44,14 @@ class FireMapState extends State<FireMap> {
   Location location = new Location();
   Timer timer;
   String nombreUser = "";
+  String nombreAdmin = "";
   String close = "";
   var finalDate;
   String incidenceId = "";
   SharedPreferences prefs ;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
   MarkerId markerId = new MarkerId("prueba");
+  MarkerId markerId2 = new MarkerId("prueba2");
   var markerIcon;
   final Database _database = Database();
   
@@ -57,40 +60,18 @@ class FireMapState extends State<FireMap> {
     super.initState();
     //carga las prefs
     getUser();
-    getLocation();
-   getUserLocation() ;
+     getUserLocation() ;
+     getAdminLocation();
+
+    
+  
    // getUserPrefLocation();
   
  
-    var thread = new Thread(() async{
-        prefs = await SharedPreferences.getInstance();
-        var open = prefs.get("state");
-        if(open == "true"){
-          startTimer();
-        }else{
-          finalDate = prefs.get("IncidentDate");
-        }
-      
-        
-    });
-   thread.start();
     
   }//End init State
 
-  //Empezar Contador
-  startTimer() async{
-      if (timer!=null){
-        timer.cancel();
-      }
-      const refreshTime = const Duration(seconds: 2);
-      timer = new Timer.periodic(
-        refreshTime,(timer){
-          getLocation();
-         
-          
-        }
-      );
-  }
+  
      //obtener el user
   getUserId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -98,11 +79,19 @@ class FireMapState extends State<FireMap> {
   return uid ;
   }
   //obtener nombre de la Usuaria
+  getAdmin() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var id = prefs.getString("user");
+      Database.getAdminName(id).then((user){
+        nombreAdmin = prefs.getString("adminName");
+      });
+          
+  }
   getUser() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var id = prefs.getString("user");
       Database.getUserName(id).then((user){
-        nombreUser = prefs.getString("adminName");
+        nombreUser = prefs.getString("UserName");
       });
           
   }
@@ -130,6 +119,19 @@ class FireMapState extends State<FireMap> {
                         latitude_user,longitude_user
                       ),
                       infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta es la posició de la usuaria amb l'incidencia"),
+                      onTap: ()=>{},
+                     
+                      
+                    );
+    markers[markerId2] =  new Marker(
+
+                      
+                      markerId: markerId,
+                      
+                      position: LatLng(
+                        latitude,longitude
+                      ),
+                      infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta va ser la meva posició"),
                       onTap: ()=>{},
                      
                       
@@ -172,6 +174,7 @@ getUserLocation()  async {
          setState(() {
         latitude_user =  double.parse(prefs.get("lat_admin"));
         longitude_user = double.parse(prefs.get("lon_admin"));
+        
         setMarker();
     });
     });
@@ -184,14 +187,17 @@ getUserPrefLocation()async{
 }
 
 //Obtener la localizacion del admin desde la incidencia
-  Future getAdminLocation(user)  async {
+  Future getAdminLocation()  async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+      await Database.getIncidenceLocationUser().then((option){
+          setState(() {
+      latitude =  double.parse(prefs.getString("lat_user"));
+      longitude = double.parse(prefs.getString("lon_user"));
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => RealTimeLocationOff()),);
+         });
+      }); 
+   
     
-    Database.getLocationData(); 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      latitude =  prefs.getInt("lat_admin").toDouble();
-      longitude = prefs.getInt("lon_admin").toDouble();
-    });
   }
  
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
@@ -206,7 +212,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                                     initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude']) ,double.parse(document['longitude'])), zoom: 10),
                                     compassEnabled: false,
                                     onMapCreated: _onMapCreated,
-                                    myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
+                                    myLocationEnabled: false, // Add little blue dot for device location, requires permission from user
                                     mapType: MapType.normal, 
                                     
                                     markers:  Set<Marker>.of(markers.values),
@@ -243,7 +249,6 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
    return Scaffold(
         appBar: AppBar(
           title: Text("Incidencia"),
-          backgroundColor: Colors.purpleAccent,
         ),
         body: StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
@@ -252,7 +257,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                     return new ListView.builder(
                       itemExtent: 700.00,
                       itemCount: snapshot.data.documents.length,
-                      itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
+                      itemBuilder: (context,index) => new Text("Cargando Incidencia"),
                       );
                  }),
                     );

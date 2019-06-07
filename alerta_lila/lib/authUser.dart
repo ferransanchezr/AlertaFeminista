@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'database.dart';
 import 'userProfile.dart';
 import 'RealTimeLocation.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'userButton.dart';
+
 import 'LoaduserButton.dart';
 import 'IncidenceActiveList.dart';
 
@@ -18,92 +19,84 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-      TextEditingController emailController = new TextEditingController();
-    TextEditingController passController = new TextEditingController();
 
-  @override
-  Widget build(BuildContext context) {
-    
+    TextEditingController emailController = new TextEditingController();
+    TextEditingController passController = new TextEditingController();
     final GoogleSignIn _googleSignIn = GoogleSignIn();
     final FirebaseAuth auth = FirebaseAuth.instance;
-
     SharedPreferences prefs;
-    Future<FirebaseUser> _handleSignIn(String email, String password) async {
+    String errorCode = "";
+
+    @override 
+    initState() {
+      _autoLogIn();
+    }
+
+/* Function: HandleSignIn
+   Descripcion: inicio de session a través de firebase*/   
+Future<FirebaseUser> _handleSignIn(String email, String password) async {
     final FirebaseUser currentUser = await auth.currentUser();
     FirebaseUser user ;
     if(currentUser!=null){
          user = currentUser;
     }else{
-     user = await auth.signInWithEmailAndPassword(email: email, password: password);
+     user = await auth.signInWithEmailAndPassword(email: email, password: password).catchError((onError){
+        setState(() {
+         errorCode =  "Error e-mail o password no valids";
+        });
+         
+        
+     });
     }
     assert(user != null);
     assert(await user.getIdToken() != null);
-
-    
-
     print('signInEmail succeeded: $user');
-
-    Database.createUser(user.email, user.uid);
-    
-   // print("signed in " + user.displayName);
     
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("user",user.uid);
-   
+    Database.createUser(user.email, user.uid,context);
     
-     Route route = MaterialPageRoute(builder: (context) => LoadUserButton());
-     Route route2 = MaterialPageRoute(builder: (context) => ActiveList());
-     Database.getAdmin();
-     if(prefs.containsKey("admin")){
-       if(prefs.get("admin")=="true"){
-          if(!route.isCurrent){
-              Navigator.pushReplacement(
-          context,
-          route2,
-          );
-          }
-       }
-       else{
-          if(!route.isCurrent){
-                    Navigator.pushReplacement(
-                context,
-                route,
-                );
-              }
-       }
-     } 
-     
-     
-  
-          
-  return user;
+    
+    
+    
+     return user;
 }
-     _getPrefs()async{
-      prefs = await SharedPreferences.getInstance();
-       
+    _getPrefs()async{
+      prefs = await SharedPreferences.getInstance(); 
     }
-    
+    //log In if User Exists
     _autoLogIn() {
       _getPrefs().then((p){
         
       if(prefs.getString("user")!=null){
-          //cambiar por preferences stored in bd
-         // prefs.clear();
-          
+        //existe un Usuario logged  
         _handleSignIn("", "");
         }
         });
    }
-    _autoLogIn();
+  @override
+  Widget build(BuildContext context) {
+     ///
+  /// Force the layout to Portrait mode
+  /// 
+     SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown
+    ]);
     final email = TextFormField(
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
-      
+      validator: (value) {
+      if (value.isEmpty) {
+      return 'Introdueix un E-mail o Password valids';
+        }
+      },
       decoration: InputDecoration(
         hintText: 'Email',
         contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
+        
       ),
     );
    
@@ -114,8 +107,13 @@ class _LoginPageState extends State<LoginPage> {
  
     final password = TextFormField(
       controller: passController,
+      
       autofocus: false,
-  
+      validator: (value) {
+      if (value.isEmpty) {
+      return 'Introdueix un E-mail o Password valids';
+        }
+      },
       obscureText: true,
       decoration: InputDecoration(
         hintText: 'Password',
@@ -124,7 +122,7 @@ class _LoginPageState extends State<LoginPage> {
         
       ),
     );
-
+    final errorLabel = Text(errorCode,style: TextStyle(fontWeight: FontWeight.bold,color:Colors.red),);
     final loginButton = Padding(
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: RaisedButton(
@@ -139,17 +137,17 @@ class _LoginPageState extends State<LoginPage> {
          
         },
         padding: EdgeInsets.all(12),
-        color: Colors.lightBlueAccent,
+        color: Colors.purpleAccent,
         child: Text('Log In', style: TextStyle(color: Colors.white)),
       ),
     );
 
     final forgotLabel = FlatButton(
       child: Text(
-        'Forgot password?',
+        'Has oblidat la Contrasenya?',
         style: TextStyle(color: Colors.black54),
       ),
-      onPressed: () {},
+      onPressed: () {/*redirección hacia la pàgina web*/},
     );
 
     return Scaffold(
@@ -167,6 +165,7 @@ class _LoginPageState extends State<LoginPage> {
             SizedBox(height: 8.0),
             password,
             SizedBox(height: 24.0),
+            errorLabel,
             loginButton,
             forgotLabel
           ],

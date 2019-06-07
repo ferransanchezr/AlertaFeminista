@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
+import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:uuid/uuid.dart';
@@ -10,21 +13,23 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dart:async';
 
-class Database {
+import 'LoaduserButton.dart';
 
- 
+class Database {
 
   static getIncidenceState() async {
        SharedPreferences prefs = await SharedPreferences.getInstance();
         String uniqueId = prefs.getString("incidenceId");
     Firestore _firestore = Firestore.instance;
       String open = 'false';
-     await _firestore.collection('Incidencias').document(uniqueId).get().then((DocumentSnapshot ds) {
-
-              open =  ds['open'].toString();
-             
-       });
-        prefs.setString("state",open);
+      Firestore.instance
+    .collection('Incidencias')
+    .where("open", isEqualTo: "true")
+    .where("unique_id",isEqualTo: uniqueId)
+    .snapshots()
+    .listen((data) =>
+        data.documents.forEach((doc) => 
+        prefs.setString("state", doc['open'])));
 }
        
        
@@ -68,7 +73,8 @@ static Future<String> downloadImage(String uid) async {
       'longitude_admin' : '',
       'latitude_admin': '',
       'name_admin' : '',
-      'created_admin': ''
+      'created_admin': '',
+      'unique_id': uniqueId
 
       
     };
@@ -100,12 +106,14 @@ static Future<String> downloadImage(String uid) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String uniqueId = prefs.getString("incidenceId");
     String nombre = prefs.getString("userName");
+    String admin = prefs.getString("admin");
      var now = new DateTime.now();
     var mensaje = <String, dynamic>{
       'id': 'chat',
       'name' : nombre,
       'created': now.toString(),
-      'value': string
+      'value': string,
+      'admin': admin
     };
 
     Uuid id = new Uuid();
@@ -115,16 +123,17 @@ static Future<String> downloadImage(String uid) async {
  }
 
 
- static Future<String> createUser( String email,String uid) async {
+ static createUser( String email,String uid, context) {
    bool create = true;
     final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
-    reference.snapshots().listen((datasnapshot){
+     reference.snapshots().listen((datasnapshot){
       if(datasnapshot.exists){
         create = false;
       }
       else{
+        List<String> name = email.split('@');
         var user = <String, dynamic>{
-          'name': 'usuaria',
+          'name': name[0],
           'email' : email,
           'admin' : 'false',
           'latitude' : '0.00',
@@ -134,17 +143,13 @@ static Future<String> downloadImage(String uid) async {
        
         if(create){
           reference.setData(user);
+          
         }
+        
       }
+      
     });
-   
-   
-
-         
-      
-        
-        
-      
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoadUserButton()));
      }
         
      static Future<String> setOpen( String open ,String uid) async {
@@ -240,19 +245,23 @@ static Future<String> downloadImage(String uid) async {
 
      }
 
-      static Future<String> getAdmin() async {
-       SharedPreferences prefs = await SharedPreferences.getInstance();
-       String uid = prefs.get("user");
+      static  getAdmin() async  {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String uid = prefs.get("user");
        String user = 'carregant dades';
      
-          var reference =  Firestore.instance.collection('Usuarias').document(uid);
-          await reference.get().then((DocumentSnapshot ds) {
+          var reference = Firestore.instance.collection('Usuarias').document(uid);
+          
+          reference.get().then((DocumentSnapshot ds) {
+            
            
             user =  ds['admin'].toString();
-            
+             
+         
+           
        });
-       
-        prefs.setString("admin",user);   
+        prefs.setString("admin",user); 
+        
      }
     static Future<String> getIncidenceOpen(uid) async {
        SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -265,6 +274,7 @@ static Future<String> downloadImage(String uid) async {
     .listen((data) =>
         data.documents.forEach((doc) => 
         prefs.setString("incidenceId", doc['unique_id'])
+        
 
         
         )); 
@@ -272,42 +282,45 @@ static Future<String> downloadImage(String uid) async {
       
      }
      //Get Location de la Usuaria
-     static Future getLocationData( String uid) async {
+     static Future getLocationData( ) async {
       
-    
-      var user = [2];
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String uid = prefs.getString("incidenceId");
+      String latitude;
+      String longitude;
      
          var reference = await Firestore.instance.collection('Usuarias').document(uid);
           await reference.get().then((DocumentSnapshot ds) {
            
-            user[0] =  ds['latitude'];
-            user[1] = ds['longitude'];
+            latitude =  ds['latitude'];
+            longitude = ds['longitude'];
             
        });
        //guardarlo en prefs
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setInt("lat_from_user", user[0]);  
-      prefs.setInt("lon_from_user",user[1]);  
+      
+      prefs.setString("lat_from_user", latitude);  
+      prefs.setString("lon_from_user", longitude);  
      }
      //Get Location apartir de la Incicencia Usuaria
      static Future getIncidenceLocationAdmin() async {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String uid = prefs.getString("incidenceId");
     
-      var user = [2];
+      var latitude;
+      var longitude;
      
          var reference = await Firestore.instance.collection('Incidencias').document(uid);
           await reference.get().then((DocumentSnapshot ds) {
            
-            user[0] =  ds['latitude_admin'];
-            user[1] = ds['longitude_admin'];
+            latitude =  ds['latitude_admin'];
+            longitude = ds['longitude_admin'];
             
        });
        
         //guardarlo en prefs
      
-      prefs.setInt("lat_admin", user[0]);  
-      prefs.setInt("lon_admin",user[1]);     
+      prefs.setString("lat_admin", latitude);  
+      prefs.setString("lon_admin",longitude);     
      }
      //Get Location apartir de la Incicencia Administradora
     static  getIncidenceLocationUser() async {

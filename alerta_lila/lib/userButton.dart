@@ -46,6 +46,7 @@ class _Button extends State<UserButton> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Botó Alerta'),
+        backgroundColor: Colors.purpleAccent,
       ),
       body:  Center(
         child:new Container( 
@@ -110,15 +111,15 @@ class _Button extends State<UserButton> {
     setState(() {
       switch(index){
         case 0: {
-           Navigator.push(context,MaterialPageRoute(builder: (context) => List()),);
+           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => List()),);
         }
         break;
         case 1: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => UserButton()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserButton()),);
         }
         break;
         case 2: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => UserProfile()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserProfile()),);
         }
         break;
       }
@@ -134,7 +135,7 @@ class _Button extends State<UserButton> {
     String name = await  Database.getUserData(id);
 
     Database.createIncidence(id, fecha, name);
-    Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
+    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
 
 
   }

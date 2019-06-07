@@ -187,7 +187,7 @@ getUserPrefLocation()async{
 //Obtener la localizacion del admin desde la incidencia
   Future getAdminLocation(user)  async {
     
-    Database.getLocationData(user); 
+    Database.getLocationData(); 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
       latitude =  prefs.getInt("lat_admin").toDouble();
