@@ -193,6 +193,7 @@ getUserPrefLocation()async{
           setState(() {
       latitude =  double.parse(prefs.getString("lat_user"));
       longitude = double.parse(prefs.getString("lon_user"));
+      //hace que se vea raro
       Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => RealTimeLocationOff()),);
          });
       }); 

@@ -186,6 +186,6 @@ class IncidenceList extends State<MyHomePage> {
   _assignIncidence(String unique_id) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("incidenceId",unique_id);
-     Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocationLoad()));
+     Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocationLoad()));
   }
 }

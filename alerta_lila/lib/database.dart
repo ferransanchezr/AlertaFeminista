@@ -41,7 +41,14 @@ static void uploadImage(File img, String uid) async {
   StorageReference reference = FirebaseStorage.instance.ref().child('$uid/profile');
   StorageUploadTask uploadTask = reference.putFile(img);
   StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+   var url = await taskSnapshot.ref.getDownloadURL();
+   var user = <String, dynamic>{
+         'profile_path':url
+        };
+    final DocumentReference reference2 = Firestore.instance.document("Usuarias/$uid") ;
+    reference2.updateData(user);
   
+ 
 }
 static Future<String> downloadImage(String uid) async {
   var reference =( await FirebaseStorage.instance.ref().child('$uid/profile').getDownloadURL());
@@ -340,6 +347,7 @@ static Future<String> downloadImage(String uid) async {
      
       prefs.setString("lat_user", lat_user);  
       prefs.setString("lon_user", lon_user);  
+      return lat_user;
     }
     
      //Get Incidence final Date

@@ -1,9 +1,11 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:threading/threading.dart';
 import 'localizationDelegate.dart';
 import 'IncidenceList.dart';
 import 'authUser.dart';
@@ -24,7 +26,8 @@ class UserButton extends StatefulWidget {
 class _Button extends State<UserButton> {
   int _selectedIndex = 1;
   String id = "";
- 
+  Timer timer;
+  
 
   final _widgetOptions = [
     Text('Index 0: Home'),
@@ -35,9 +38,16 @@ class _Button extends State<UserButton> {
   initState() {
     super.initState();
     getUserId();
-    _activeIncidence();
+   _activeIncidence();
+  
+     var thread = new Thread(() async{
+          startTimer();
+    });
+   thread.start();
     
   }
+  
+
  
   @override
   Widget build(BuildContext context) {
@@ -66,7 +76,7 @@ class _Button extends State<UserButton> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
           BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('alerta')),
-          BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('School')),
+          BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
         ],
         currentIndex: _selectedIndex,
         fixedColor: Colors.deepPurple,
@@ -80,32 +90,43 @@ class _Button extends State<UserButton> {
       uid = prefs.getString("user");
       return uid ;
   }
+  
+_getinidenceId() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.get("incidenceId");
+}
+_getState() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.get("state");
+}
+
  
- 
+   //Empezar Contador
+  startTimer() async{
+      if (timer!=null){
+        timer.cancel();
+      }
+      const refreshTime = const Duration(seconds: 2);
+      timer = new Timer.periodic(
+        refreshTime,(timer){
+         _activeIncidence();
+          
+        }
+      );
+  }
  Future<Null>  _activeIncidence() async{
    
-     String uid = "";
-     String state = "";
-     SharedPreferences prefs = await SharedPreferences.getInstance();
-     
-      if(prefs.containsKey("incidenceId")){
-        uid = prefs.getString("incidenceId");
-        
+     await Database.getIncidenceState();
+     var id = await _getinidenceId();
+     id = id.toString();
+     var state = await _getState();
+     state = state.toString();
+     if(id!="null" && state!="null"){
+      if(state=="true"){
+        timer.cancel();
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
       }
-      if(uid !=null && uid!=""){
-        Database.getIncidenceState().then((option){
-        if(prefs.containsKey("state")){
-          state = prefs.get("state");
-          if(state=="true"){
-             Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-          }
-        }
-        });
-       
-       
-      }
-   
-  
+     }
  }
   void _onItemTapped(int index) {
     setState(() {

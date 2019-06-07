@@ -240,7 +240,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
           title: Text("Incidencia"),
            backgroundColor: Colors.purpleAccent,
         ),
-        body: StreamBuilder(
+        body: StreamBuilder( 
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){  
                     if (!snapshot.hasData) return new Text('Loading...');

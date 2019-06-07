@@ -47,6 +47,7 @@ class _MyHomePageState extends State<MyHomePage> {
   
   File _image;
   String user = "";
+  var userEmail = "";
  int _selectedIndex = 1;
   String _imageUrl = "";
   Usuaria profile = Usuaria("","","","");
@@ -54,6 +55,10 @@ class _MyHomePageState extends State<MyHomePage> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       var uid = prefs.getString("user");
       return uid ;
+    }
+    getEmail() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      userEmail = prefs.getString("email");
     }
      Future getUserDbData()  async {
       String user = await getUserId();
@@ -99,25 +104,16 @@ class _MyHomePageState extends State<MyHomePage> {
   initState() {
     super.initState();
     getUserDbData();
-    loadImage();
-  }
-   
-  @override
-  Widget build(BuildContext context) {
-   
-  
-   
-   
-  final _width = MediaQuery.of(context).size.width;
-    final _height = MediaQuery.of(context).size.height;
-    
-    
-    
-    
+    getEmail();
+    //loadImage();
 
-    return new Stack(children: <Widget>[
+  }
+  Widget _buildListItem(BuildContext context,DocumentSnapshot document){
+     final _width = MediaQuery.of(context).size.width;
+    final _height = MediaQuery.of(context).size.height;
+  return new Stack(children: <Widget>[
       new Container(color: Colors.blue,),
-      new Image.network( profile.imageUrl, fit: BoxFit.fill,),
+      new Image.network( document['profile_path'], fit: BoxFit.fill,),
       new BackdropFilter(
       filter: new ui.ImageFilter.blur(
       sigmaX: 6.0,
@@ -150,10 +146,10 @@ class _MyHomePageState extends State<MyHomePage> {
             child: new Column(
               children: <Widget>[
                 new SizedBox(height: _height/12,),
-                new CircleAvatar(radius:_width<_height? _width/4:_height/4,backgroundImage: NetworkImage(profile.imageUrl), ),
+                new CircleAvatar(radius:_width<_height? _width/4:_height/4,backgroundImage: NetworkImage(document['profile_path']), ),
                 new SizedBox(height: _height/25.0,),
                 
-                new Text(profile.email, style: new TextStyle(fontWeight: FontWeight.bold, fontSize: _width/15, color: Colors.white),),
+                new Text(document['name'], style: new TextStyle(fontWeight: FontWeight.bold, fontSize: _width/15, color: Colors.white),),
                 new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),
                   
                 ),
@@ -176,7 +172,23 @@ class _MyHomePageState extends State<MyHomePage> {
                 onTap: _onItemTapped,
               ),
       )
-    ],);
+    ],
+   );
+  }
+   
+  @override
+  Widget build(BuildContext context) {
+
+    return StreamBuilder(stream:  Firestore.instance.collection('Usuarias').where("email",isEqualTo: userEmail).snapshots() ,
+    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+      if (!snapshot.hasData) return new Text('Loading...');
+      return _buildListItem(context,snapshot.data.documents[0]);
+      
+                      
+    }
+    );
+    
+   
   }
 void _onItemTapped(int index) {
   _selectedIndex = index;
