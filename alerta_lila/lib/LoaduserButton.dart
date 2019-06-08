@@ -52,7 +52,8 @@ class _Button extends State<LoadUserButton> {
         title: Text('Botó Alerta'),
       ),
       body:  Center(
-        child:new Text("Carregant...")
+        child: CircularProgressIndicator(),
+         
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[

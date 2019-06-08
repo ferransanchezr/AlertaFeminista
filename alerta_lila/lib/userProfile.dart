@@ -48,6 +48,8 @@ class _MyHomePageState extends State<MyHomePage> {
   File _image;
   String user = "";
   var userEmail = "";
+  double _width = 50;
+  double _height = 50;
  int _selectedIndex = 1;
   String _imageUrl = "";
   Usuaria profile = Usuaria("","","","");
@@ -100,9 +102,11 @@ class _MyHomePageState extends State<MyHomePage> {
      });
      
   }
+
   @override
   initState() {
     super.initState();
+    
     getUserDbData();
     getEmail();
     //loadImage();
@@ -111,8 +115,9 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget _buildListItem(BuildContext context,DocumentSnapshot document){
      final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
+    bool emergency = false;
   return new Stack(children: <Widget>[
-      new Container(color: Colors.blue,),
+      new Container(color: Color(0xffee98fb),),
       new Image.network( document['profile_path'], fit: BoxFit.fill,),
       new BackdropFilter(
       filter: new ui.ImageFilter.blur(
@@ -121,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       child: new Container(
       decoration: BoxDecoration(
-      color:  Colors.purpleAccent.withOpacity(0.9),
+      color:  Colors.purple[300].withOpacity(0.9),
       borderRadius: BorderRadius.all(Radius.circular(50.0)),
       ),)),
       new Scaffold(
@@ -153,22 +158,41 @@ class _MyHomePageState extends State<MyHomePage> {
                 new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),
                   
                 ),
+                new Text('Activa el Mode Emergencia',style: TextStyle(color: Colors.white),),
+              Transform.scale(
+                scale: 1.25,
+                child:
+                  Switch(
+                value: emergency,
+                
+                onChanged: (value) {
+                  setState(() {
+                    emergency = value;
+                  });
+                },
+                activeTrackColor: Color(0xffee98fb), 
+                activeColor: Colors.purple[300],
+              ),
+              ),
+              
               ],
             ),
           ),
           floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xff883997),
         onPressed: getImage,
         tooltip: 'Pick Image',
         child: Icon(Icons.add_a_photo),
       ),
          bottomNavigationBar: BottomNavigationBar(
+                
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
                   BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('alerta')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
                 currentIndex: 2,
-                fixedColor: Colors.deepPurple,
+                fixedColor: Color(0xff883997),
                 onTap: _onItemTapped,
               ),
       )
@@ -181,8 +205,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return StreamBuilder(stream:  Firestore.instance.collection('Usuarias').where("email",isEqualTo: userEmail).snapshots() ,
     builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-      if (!snapshot.hasData) return new Text('Loading...');
-      return _buildListItem(context,snapshot.data.documents[0]);
+      if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
+      return AnimatedOpacity(duration: Duration(seconds:1),
+      opacity: true ? 1.0 : 0.0,
+      child: _buildListItem(context,snapshot.data.documents[0]));
+       
       
                       
     }
@@ -204,13 +231,14 @@ void _onItemTapped(int index) {
         }
         break;
         case 2: {
-          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserProfile()),);
+      
         }
         break;
       }
       
     });
   }
+  
   Widget rowCell(int count, String type) => new Expanded(child: new Column(children: <Widget>[
     new Text('$count',style: new TextStyle(color: Colors.white),),
     new Text(type,style: new TextStyle(color: Colors.white, fontWeight: FontWeight.normal))

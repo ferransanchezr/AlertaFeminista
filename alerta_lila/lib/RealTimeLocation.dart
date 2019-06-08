@@ -37,13 +37,14 @@ class FireMap extends StatefulWidget {
 class FireMapState extends State<FireMap> {
   GoogleMapController mapController;
   final LocalStorage storage = new LocalStorage('uid');
-  var latitude = 0.00;
-  var longitude = 0.00;
+  var latitude_admin = 0.00;
+  var longitude_admin = 0.00;
   var latitude_user = 0.00;
   var longitude_user = 0.00;
   Location location = new Location();
   Timer timer;
   String nombreUser = "";
+  String nombreAdmin = "";
   String close = "";
   var finalDate;
   String incidenceId = "";
@@ -61,10 +62,12 @@ class FireMapState extends State<FireMap> {
   initState()  {
     super.initState();
     //carga las prefs
-    getUser();
-   _syncState();
+    //getUser();
     getLocation();
-   getUserLocation() ;
+   _syncState();
+  // _syncLocation();
+   
+   //getUserLocation() ;
    // getUserPrefLocation();
   
  
@@ -94,10 +97,11 @@ _getState() async{
 _setPolygons(){
  
   List<LatLng> polylinePoints = <LatLng>[
-    new LatLng(latitude, longitude), new LatLng(latitude_user, longitude_user)
+    new LatLng(latitude_admin, longitude_admin), new LatLng(latitude_user, longitude_user)
   ];
   polygons = <Polyline>[
     new Polyline(
+      color: Colors.purpleAccent,
       polylineId: polylineId,
       points: polylinePoints
     ),
@@ -108,6 +112,7 @@ _syncState() async {
     id = id.toString();
     var state = await _getState();
     state = state.toString();
+ 
     
     DocumentReference reference = Firestore.instance.collection('Incidencias').document(id);
     
@@ -119,6 +124,20 @@ _syncState() async {
           
           Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
         }
+        
+        // Do something with change
+        //getUserLocation();
+        //getAdminLocation();
+        latitude_admin = double.parse(querySnapshot.data['latitude_admin']);
+        longitude_admin = double.parse(querySnapshot.data['longitude_admin']);
+        latitude_user = double.parse(querySnapshot.data['latitude']);
+        longitude_user = double.parse(querySnapshot.data['longitude']);
+        nombreAdmin = querySnapshot.data['name_admin'];
+       if(latitude_admin!=0.00 && longitude_admin!=0.00){
+        setMarker();
+        _setPolygons();
+       }
+        
         
       
     });
@@ -140,11 +159,6 @@ _syncLocation() async {
     
     reference.snapshots().listen((querySnapshot) {
       
-        // Do something with change
-        getUserLocation();
-        getAdminLocation();
-        setMarker();
-        _setPolygons();
     });
 }
   //Empezar Contador
@@ -214,9 +228,9 @@ _syncLocation() async {
                       markerId: markerId,
                       
                       position: LatLng(
-                        latitude_user,longitude_user
+                        latitude_admin,longitude_admin
                       ),
-                      infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta es la posició de la usuaria amb l'incidencia"),
+                      infoWindow: InfoWindow(title: nombreAdmin, snippet: "aquesta es la posició de la responsable del punt lila"),
                       onTap: ()=>{},
                      
                       
@@ -231,23 +245,17 @@ _syncLocation() async {
   //obtener localización actual, guardarla en la bd y mostrar el nuevo mapa
   Future getLocation() async{
     var l = await location.getLocation();
-     
-          latitude = l.latitude;
-          longitude = l.longitude;
-      
-  
-   
-    
+
     //save location in database
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var uid = prefs.get("user");
     setState(() {
       incidenceId = prefs.get("incidenceId");
+      latitude_user = l.latitude;
+      longitude_user = l.longitude;
     });
-    
-    
-    Database.setLocation(latitude, longitude, uid); 
-    Database.setIncidenceLocationAdmin(latitude, longitude, incidenceId);
+    Database.setLocation(l.latitude, l.longitude, uid); 
+    Database.setIncidenceLocationUser(l.latitude,l.longitude,incidenceId);
    // getUserLocation(incidenceId);
     
     }//end GetLocation
@@ -281,21 +289,36 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                                     polylines: Set<Polyline>.of(polygons),
                                 ),
                               ),
-                             new Expanded(
+                             new Container(
+                               padding:  EdgeInsets.all(8.0),
                                 child: 
-                                GridView.count(
-                                    crossAxisCount: 2,
-                                    childAspectRatio: 3,
-                                
-                                  // Generate 100 Widgets that display their index in the List
-                                  children: [leftSection,middleSection,new Text(document['name_admin']),new Text(document['created']), telefon, new Container(
-                
-                            child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);}
-                            ,)
-                            ) ],
-                                            ),
-                                        
-                                        ),
+                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                new Text("Administradora",style:TextStyle(color: Color(0xff883997),fontWeight: FontWeight.bold )),
+                                 new Text("Data de Creació",style: TextStyle(color: Color(0xff883997),fontWeight: FontWeight.bold ),),
+                                 
+                                  ],
+                                 ),
+                                ),
+                                new Container(
+                               padding:  EdgeInsets.all(8.0),
+                                child: 
+                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                               new Text(document['name_admin']),
+                                 new Text(document['created'])
+                                  ],
+                                 ),
+                                ),
+                                  new Container(
+                               padding:  EdgeInsets.all(15.0),
+                                child: 
+                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                  telefon,chat
+                                  ],
+                                 ),
+                                ),      
                                         
                                   ],
                                   ),
@@ -312,16 +335,16 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
    return Scaffold(
         appBar: AppBar(
           title: Text("Incidencia"),
-          backgroundColor: Colors.purpleAccent,
+          backgroundColor: Colors.purple[300],
         ),
         body: StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                      
-                    if (!snapshot.hasData) return new Text('Loading...');
+                    if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
                     
                     return new ListView.builder(
-                      itemExtent: 700.00,
+                      itemExtent: 600.00,
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
                       );
@@ -348,21 +371,18 @@ final duradaAtencio = new Container(
  
   child: new Text("00:00:00")
   );
-final telefon = new Container(
-   
-  child: IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 40.0, onPressed:()=> launch("tel://695745855"),)
-  );
-  final chat = new Container(
- 
-  child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ }
-  ,)
-  );
+final telefon = 
+   new
+   IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
+  
+  final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){ }
+  ,);
   void _onMapCreated(GoogleMapController controller) {
     
     setState(() {
       mapController = controller;
       mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
-        target : LatLng(latitude, longitude),zoom:15,
+        target : LatLng(latitude_user, longitude_user),zoom:15,
         
 
       ))

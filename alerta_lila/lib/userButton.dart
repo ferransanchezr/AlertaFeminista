@@ -56,14 +56,14 @@ class _Button extends State<UserButton> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Botó Alerta'),
-        backgroundColor: Colors.purpleAccent,
+        backgroundColor: Colors.purple[300],
       ),
       body:  Center(
         child:new Container( 
               width: 200.0,
               height: 200.0,
               child: new FloatingActionButton( 
-                backgroundColor: Colors.purple,
+                backgroundColor: Colors.purple[300],
                 
                 child: Icon(Icons.add_alert,size:100.0),
                 
@@ -79,7 +79,7 @@ class _Button extends State<UserButton> {
           BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
         ],
         currentIndex: _selectedIndex,
-        fixedColor: Colors.deepPurple,
+        fixedColor: Color(0xff883997),
         onTap: _onItemTapped,
       ),
     );
@@ -124,7 +124,11 @@ _getState() async{
      if(id!="null" && state!="null"){
       if(state=="true"){
         timer.cancel();
+        var route = ModalRoute.of(context);
+
+      if(route!=null){
         Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
+      }
       }
      }
  }
@@ -136,7 +140,7 @@ _getState() async{
         }
         break;
         case 1: {
-          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserButton()),);
+        
         }
         break;
         case 2: {

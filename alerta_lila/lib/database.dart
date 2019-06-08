@@ -76,10 +76,10 @@ static Future<String> downloadImage(String uid) async {
       'name' : name,
       'created': fecha,
       'open': 'true',
-       'id_admin' : '',
-      'longitude_admin' : '',
-      'latitude_admin': '',
-      'name_admin' : '',
+       'id_admin' : 'no disponile',
+      'longitude_admin' : '0.00',
+      'latitude_admin': '0.00',
+      'name_admin' : 'Administradora no Disponible',
       'created_admin': '',
       'unique_id': uniqueId
 
@@ -193,6 +193,19 @@ static Future<String> downloadImage(String uid) async {
         var user = <String, dynamic>{
          'latitude_admin' : latitude,
           'longitude_admin': longitude
+        };
+        final DocumentReference reference = Firestore.instance.document("Incidencias/$uniqueId") ;
+        reference.updateData(user);
+     }
+     //Set Incidence User Location
+     static  setIncidenceLocationUser( double lat, double long,String uid) async {
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        String uniqueId = prefs.getString("incidenceId");
+        var latitude = lat.toString();
+        var longitude = long.toString();
+        var user = <String, dynamic>{
+         'latitude' : latitude,
+          'longitude': longitude
         };
         final DocumentReference reference = Firestore.instance.document("Incidencias/$uniqueId") ;
         reference.updateData(user);

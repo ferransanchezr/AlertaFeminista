@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'RealTimeLocationOff.dart';
 import 'database.dart';
 import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
@@ -119,21 +120,25 @@ class IncidenceList extends State<MyHomePage> {
     return Scaffold(
         appBar: AppBar(
           title: Text("Historial d'Incidencias"),
-          backgroundColor: Colors.purpleAccent,
+          backgroundColor: Colors.purple[300],
         ),
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").where("id",isEqualTo: userName).snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                   if (!snapshot.hasData) return new Text('Loading...');
                   return new ListView(
+                    padding: EdgeInsets.all(8.0),
+                    
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
+                      
                       return new 
-                      Container(
-                        color:Colors.purpleAccent,
-                        child:ListTile(
-                        leading: new Icon(Icons.error,color:Colors.white),
+                      Card(
+                        color:Color(0xffee98fb),
                         
-                        title: new Text('Incidencia'),
+                        child:ListTile(
+                        leading: new Icon(Icons.report,color:Color(0xff883997),size: 50,),
+                        contentPadding: EdgeInsets.all(8.0),
+                        title: new Text('Incidencia'),        
                         subtitle: new Text(document['name'] + ' | ' + document['created']),
                         onLongPress: ()=>_assignIncidence(document['unique_id']),
                       ),
@@ -150,7 +155,7 @@ class IncidenceList extends State<MyHomePage> {
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
                 currentIndex: 0,
-                fixedColor: Colors.deepPurple,
+                fixedColor: Color(0xff883997),
                 onTap: _onItemTapped,
               ),
         
@@ -162,7 +167,7 @@ class IncidenceList extends State<MyHomePage> {
     setState(() {
       switch(index){
         case 0: {
-           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => List()),);
+          
         }
         break;
         case 1: {
@@ -186,6 +191,6 @@ class IncidenceList extends State<MyHomePage> {
   _assignIncidence(String unique_id) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("incidenceId",unique_id);
-     Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocationLoad()));
+     Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocationOff()));
   }
 }
