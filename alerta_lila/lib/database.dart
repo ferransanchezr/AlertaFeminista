@@ -32,7 +32,35 @@ class Database {
         prefs.setString("state", doc['open'])));
 }
        
-       
+   //upload chat image
+   static void uploadChatImage(File img, String uid) async {
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+    String uniqueId = prefs.getString("incidenceId");
+    String nombre = prefs.getString("userName");
+    String admin = prefs.getString("admin");
+     var now = new DateTime.now();
+ 
+  Uuid id = new Uuid();
+  String uid = id.v1();
+  StorageReference reference = FirebaseStorage.instance.ref().child('$id/Incidence/$uniqueId/$uid');
+  StorageUploadTask uploadTask = reference.putFile(img);
+  StorageTaskSnapshot taskSnapshot = await uploadTask.onComplete;
+   var url = await taskSnapshot.ref.getDownloadURL();
+   
+   var mensaje = <String, dynamic>{
+      'id': 'chat',
+      'name' : nombre,
+      'created': now.toString(),
+      'value': " ",
+      'admin': admin,
+      'type': "image",
+      'path': url
+    };
+    var reference2 = Firestore.instance.collection('Incidencias').document('$uniqueId').collection('Mensajes').document('$uid') ;
+    reference2.setData(mensaje);
+  
+ 
+}    
 
 
 //Estos metodos tienen que servir para subir imagenes en general
@@ -156,7 +184,9 @@ static Future<String> downloadImage(String uid) async {
       'name' : nombre,
       'created': now.toString(),
       'value': string,
-      'admin': admin
+      'admin': admin,
+      'type': 'text',
+      'path' : ' '
     };
 
     Uuid id = new Uuid();
