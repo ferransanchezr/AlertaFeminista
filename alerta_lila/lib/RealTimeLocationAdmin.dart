@@ -1,9 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import 'package:localstorage/localstorage.dart';
 import 'package:location/location.dart';
 import 'dart:async';
+import 'authUser.dart';
 import 'database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threading/threading.dart';
@@ -36,47 +38,117 @@ class FireMap extends StatefulWidget {
 class FireMapState extends State<FireMap> {
   GoogleMapController mapController;
   final LocalStorage storage = new LocalStorage('uid');
-  var latitude = 50.453479;
-  var longitude = -2.318524;
-  var latitude_user = 50.453479;
-  var longitude_user = -2.318524;
+  var latitude_admin = 0.00;
+  var longitude_admin = 0.00;
+  var latitude_user = 0.00;
+  var longitude_user = 0.00;
   Location location = new Location();
   Timer timer;
   String nombreUser = "";
+  String nombreAdmin = "";
   String close = "";
+  String _value = "";
   var finalDate;
   String incidenceId = "";
+  List<DropdownMenuItem> listDrop = [
+    new DropdownMenuItem(
+          child : new Text("Assigna Administradora"),
+          value: "0"
+            )
+  ];
   SharedPreferences prefs ;
   Map<MarkerId, Marker> markers = <MarkerId, Marker>{};
+  List<Polyline> polygons = <Polyline>[];
   MarkerId markerId = new MarkerId("prueba");
+  PolylineId polylineId = new PolylineId("polyline");
+  bool incidenceSwitch = true;
   var markerIcon;
   final Database _database = Database();
+  final myController = TextEditingController();
   
-  @override   
-  initState() {
-    super.initState();
-    //carga las prefs
-    getUser();
-    getLocation();
-   getUserLocation() ;
-   // getUserPrefLocation();
-  
- 
-    var thread = new Thread(() async{
-        prefs = await SharedPreferences.getInstance();
-        Database.getIncidenceState();
-        var open = prefs.get("state");
-        if(open == "true"){
-          startTimer();
-        }else{
-          finalDate = prefs.get("IncidentDate");
-        }
-      
         
-    });
-   thread.start();
+
+  @override   
+  initState()  {
+    super.initState();
+  
+    
+    //carga las prefs
+    //getUser();
+    getLocation();
+   _syncState();
+  // _syncLocation();
+   
+   //getUserLocation() ;
+   // getUserPrefLocation();
     
   }//End init State
+
+_getinidenceId() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.get("incidenceId");
+}
+_getState() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  return prefs.get("state");
+}
+
+_setPolygons(){
+ 
+  List<LatLng> polylinePoints = <LatLng>[
+    new LatLng(latitude_admin, longitude_admin), new LatLng(latitude_user, longitude_user)
+  ];
+  polygons = <Polyline>[
+    new Polyline(
+      color: Colors.purpleAccent,
+      polylineId: polylineId,
+      points: polylinePoints
+    ),
+  ];
+}
+_setState(String state) async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("state", state);
+}
+_syncState() async {
+   var id = await _getinidenceId();
+    id = id.toString();
+    var state = await _getState();
+    state = state.toString();
+ 
+    
+    DocumentReference reference = Firestore.instance.collection('Incidencias').document(id);
+    
+    reference.snapshots().listen((querySnapshot) {
+      
+        // Do something with change
+        print("this was changed, " + querySnapshot.data['open'] );
+        if(state!="null"){
+        if(state!=querySnapshot.data['open'] ){
+          _setState(querySnapshot.data['open']);
+          Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
+          }
+        }
+        
+        // Do something with change
+        //getUserLocation();
+        //getAdminLocation();
+        latitude_admin = double.parse(querySnapshot.data['latitude_admin']);
+        longitude_admin = double.parse(querySnapshot.data['longitude_admin']);
+        latitude_user = double.parse(querySnapshot.data['latitude']);
+        longitude_user = double.parse(querySnapshot.data['longitude']);
+        nombreUser = querySnapshot.data['name'];
+        nombreAdmin = querySnapshot.data['name_admin'];
+        _setState(querySnapshot.data['open']);
+       if(latitude_admin!=0.00 && longitude_admin!=0.00){
+        setMarker();
+        _setPolygons();
+       }
+        
+        
+      
+    });
+}
 
   //Empezar Contador
   startTimer() async{
@@ -87,7 +159,7 @@ class FireMapState extends State<FireMap> {
       timer = new Timer.periodic(
         refreshTime,(timer){
           getLocation();
-          getCounter();
+          
           
         }
       );
@@ -103,9 +175,25 @@ class FireMapState extends State<FireMap> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var id = prefs.getString("user");
       Database.getUserName(id).then((user){
-        nombreUser = prefs.getString("UserName");
+        nombreUser = prefs.getString("adminName");
       });
           
+  }
+  _getUserLatitude() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("lat_user");
+  }
+  _getUserLongitude() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("lon_user");
+  }
+  _getAdminLatitude()async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("lat_admin");
+  }
+  _getAdminLongitude() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString("lon_admin");
   }
 
   //Obtener la Duración de la incidencia
@@ -120,6 +208,7 @@ class FireMapState extends State<FireMap> {
       finalDate = now.difference(date).inSeconds;
     });
   }
+ 
   //Crear el pin en googleMaps
   setMarker(){
      markers[markerId] = new Marker(
@@ -130,12 +219,13 @@ class FireMapState extends State<FireMap> {
                       position: LatLng(
                         latitude_user,longitude_user
                       ),
-                      infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta es la posició de la usuaria amb l'incidencia"),
+                      infoWindow: InfoWindow(title: nombreUser, snippet: "aquesta es la ubicació de la persona amb l'incidencia."),
                       onTap: ()=>{},
                      
                       
                     );
   }
+  
 
   //Obtener la fecha de la incidencia
   getIncidenceDate(){
@@ -144,55 +234,29 @@ class FireMapState extends State<FireMap> {
   //obtener localización actual, guardarla en la bd y mostrar el nuevo mapa
   Future getLocation() async{
     var l = await location.getLocation();
-     
-          latitude = l.latitude;
-          longitude = l.longitude;
-      
-  
-   
-    
+
     //save location in database
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var uid = prefs.get("user");
     setState(() {
       incidenceId = prefs.get("incidenceId");
+      latitude_admin = l.latitude;
+      longitude_admin = l.longitude;
     });
-    
-    
-    Database.setLocation(latitude, longitude, uid); 
-    Database.setIncidenceLocationAdmin(latitude, longitude, incidenceId);
+    Database.setLocation(l.latitude, l.longitude, uid); 
+    Database.setIncidenceLocationAdmin(l.latitude,l.longitude,incidenceId);
    // getUserLocation(incidenceId);
     
     }//end GetLocation
 
 //Obtener la localizacion desde la incidencia
-getUserLocation()  async {
-   SharedPreferences prefs = await SharedPreferences.getInstance(); 
-    Database.getIncidenceLocationUser().then((user){
-     
-         setState(() {
-        latitude_user =  double.parse(prefs.get("lat_user"));
-        longitude_user = double.parse(prefs.get("lon_user"));
-        setMarker();
-    });
-    });
-    
-   
-  }
-getUserPrefLocation()async{
-   
-  
+getUserLocation()  async { 
+ await  Database.getIncidenceLocationAdmin();  
 }
-
-//Obtener la localizacion del admin desde la incidencia
-  Future getAdminLocation(user)  async {
     
-    Database.getLocationData(); 
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    setState(() {
-      latitude =  prefs.getInt("lat_admin").toDouble();
-      longitude = prefs.getInt("lon_admin").toDouble();
-    });
+//Obtener la localizacion del admin desde la incidencia
+  Future getAdminLocation()  async {
+    await Database.getLocationData(); 
   }
  
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
@@ -204,30 +268,50 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                                   Expanded(
                                     child: GoogleMap(
                                   
-                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude']) ,double.parse(document['longitude'])), zoom: 10),
+                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude_admin']) ,double.parse(document['longitude_admin'])), zoom: 15),
                                     compassEnabled: false,
                                     onMapCreated: _onMapCreated,
                                     myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
                                     mapType: MapType.normal, 
                                     
                                     markers:  Set<Marker>.of(markers.values),
+                                    polylines: Set<Polyline>.of(polygons),
                                 ),
                               ),
-                             new Expanded(
+                             new Container(
+                               padding:  EdgeInsets.all(8.0),
                                 child: 
-                                GridView.count(
-                                    crossAxisCount: 2,
-                                    childAspectRatio: 3,
-                                
-                                  // Generate 100 Widgets that display their index in the List
-                                  children: [leftSection,middleSection,new Text(document['name']),new Text(document['created']), telefon, new Container(
-                
-                            child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);}
-                            ,)
-                            ) ],
-                                            ),
-                                        
-                                        ),
+                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                new Text("Usuaria",style:TextStyle(color: Color(0xff883997),fontWeight: FontWeight.bold )),
+                                 new Text("Data de Creació",style: TextStyle(color: Color(0xff883997),fontWeight: FontWeight.bold ),),
+                                 
+                                  ],
+                                 ),
+                                ),
+                                new Container(
+                               padding:  EdgeInsets.all(8.0),
+                                child: 
+                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                               new Text(document['name']),
+                                 new Text(document['created'])
+                                  ],
+                                 ),
+                                ),
+                                  new Container(
+                               padding:  EdgeInsets.all(15.0),
+                                child: 
+                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  children: <Widget>[
+                                  telefon,
+                                  new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){
+                                    Navigator.push(context,MaterialPageRoute(builder: (context) => chatPage()),);
+                                  }
+                                  ,),
+                                  ],
+                                 ),
+                                ),      
                                         
                                   ],
                                   ),
@@ -244,16 +328,36 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
    return Scaffold(
         appBar: AppBar(
           title: Text("Incidencia"),
+          backgroundColor: Colors.purple[300],
+           actions:  <Widget>[
+             Switch(
+                value: incidenceSwitch,
+                
+                onChanged: (value) {
+                  setState(() {
+                    incidenceSwitch = value;
+                    Database.incidenceSwitch(value);
+                  });
+                },
+                activeTrackColor: Color(0xffee98fb), 
+                activeColor: Colors.purple[300],
+              ),
+           ] 
+             
         ),
         body: StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
-                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){  
-                    if (!snapshot.hasData) return new Text('Loading...');
+                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+                     
+                    if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
+                    
                     return new ListView.builder(
-                      itemExtent: 700.00,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemExtent: 600.00,
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
                       );
+                    
                  }),
                     );
 
@@ -276,21 +380,23 @@ final duradaAtencio = new Container(
  
   child: new Text("00:00:00")
   );
-final telefon = new Container(
-   
-  child: IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 40.0, onPressed:()=> launch("tel://695745855"),)
-  );
-  final chat = new Container(
- 
-  child: IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 40.0,onPressed: (){ }
-  ,)
-  );
+final telefon = 
+   new
+   IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
+  
+  final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){ }
+  ,);
+
+
+
+
   void _onMapCreated(GoogleMapController controller) {
     
     setState(() {
       mapController = controller;
       mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
-        target : LatLng(latitude, longitude),zoom:15,
+        target : LatLng(latitude_admin, longitude_admin),zoom:15,
+        
 
       ))
       );

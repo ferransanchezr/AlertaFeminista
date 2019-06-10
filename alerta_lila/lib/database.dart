@@ -94,11 +94,16 @@ static Future<String> downloadImage(String uid) async {
  static Future<String> selectIncidence(String uid_admin,String fecha_admin,String latitude_admin,String longitude_admin,String name_admin,String unique_id) async {
     
     String uniqueId = unique_id;
+    var name;
+    name = name_admin;
+    if(name==null){
+      name = "no disponible";
+    }
     var incidencia = <String, dynamic>{
       'id_admin' : uid_admin,
       'longitude_admin' : longitude_admin,
       'latitude_admin': latitude_admin,
-      'name_admin' : name_admin,
+      'name_admin' : name,
       'created_admin': fecha_admin,
       
     };
@@ -108,6 +113,37 @@ static Future<String> downloadImage(String uid) async {
     reference.updateData(incidencia);
 
  }
+
+ static Future<String> selectIncidenceDrop(String uid,String unique_id) async {
+    
+      var name;
+      var latitude;
+      var longitude;
+      var uniqueId = unique_id;
+    await   Firestore.instance
+    .collection('Usuarias')
+    .where("unique_id",isEqualTo: uid)
+    .snapshots()
+    .listen((data) =>
+        data.documents.forEach((doc){
+        name = doc['name'];
+        latitude = doc['latitude'];
+        longitude = doc['longitude'];
+        var incidencia = <String, dynamic>{
+            'id_admin' : uid,
+            'longitude_admin' : longitude,
+            'latitude_admin': latitude,
+            'name_admin' : name,
+        };
+        final DocumentReference reference = Firestore.instance.document('Incidencias/$uniqueId') ;
+        reference.updateData(incidencia);
+        }),
+
+    );
+     
+  
+  }
+ 
  //Crea un Mensaje dentro de la incidencia
   static createMessage( String string,String name) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -144,7 +180,8 @@ static Future<String> downloadImage(String uid) async {
           'email' : email,
           'admin' : 'false',
           'latitude' : '0.00',
-          'longitude': '0.00'
+          'longitude': '0.00',
+          'profile_path' : ' '
         };
         
        
@@ -182,6 +219,18 @@ static Future<String> downloadImage(String uid) async {
           'longitude': longitude
         };
         final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
+        reference.updateData(user);
+     }
+     //Apagar Incidencia
+     static incidenceSwitch(state) async{
+       SharedPreferences prefs = await SharedPreferences.getInstance();
+        String uniqueId = prefs.getString("incidenceId");
+
+        var user = <String, dynamic>{
+         'open' : state.toString()
+         
+        };
+        final DocumentReference reference = Firestore.instance.document("Incidencias/$uniqueId") ;
         reference.updateData(user);
      }
        //set Admin Location at Incidence 

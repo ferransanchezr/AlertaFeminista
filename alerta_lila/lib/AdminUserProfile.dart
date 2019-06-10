@@ -1,18 +1,20 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
 import 'package:localstorage/localstorage.dart';
+import 'IncidenceActiveList.dart';
+import 'IncidenceAdminList.dart';
 import 'database.dart';  
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
+import 'main.dart';
 import 'usuaria.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'userButton.dart';
-import 'IncidenceActiveList.dart';
-import 'IncidenceAdminList.dart';
 import 'IncidenceList.dart';
 
 
@@ -47,6 +49,9 @@ class _MyHomePageState extends State<MyHomePage> {
   
   File _image;
   String user = "";
+  var userEmail = "";
+  double _width = 50;
+  double _height = 50;
  int _selectedIndex = 1;
   String _imageUrl = "";
   Usuaria profile = Usuaria("","","","");
@@ -54,6 +59,10 @@ class _MyHomePageState extends State<MyHomePage> {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       var uid = prefs.getString("user");
       return uid ;
+    }
+    getEmail() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      userEmail = prefs.getString("email");
     }
      Future getUserDbData()  async {
       String user = await getUserId();
@@ -82,30 +91,36 @@ class _MyHomePageState extends State<MyHomePage> {
       profile.imageUrl = await Database.downloadImage(id);
     
   }
-  
+  _signOut() async{
+    
+     final FirebaseAuth auth = FirebaseAuth.instance;
+     auth.signOut();
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+     prefs.clear().then((onValue){
+       Navigator.pop(context);
+        
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => MyApp()),);
+        
+     });
+     
+  }
+
   @override
   initState() {
     super.initState();
+    
     getUserDbData();
-    loadImage();
-  }
-   
-  @override
-  Widget build(BuildContext context) {
-   
-  
-   
-   
-  final _width = MediaQuery.of(context).size.width;
-    final _height = MediaQuery.of(context).size.height;
-    
-    
-    
-    
+    getEmail();
+    //loadImage();
 
-    return new Stack(children: <Widget>[
-      new Container(color: Colors.blue,),
-      new Image.network( profile.imageUrl, fit: BoxFit.fill,),
+  }
+  Widget _buildListItem(BuildContext context,DocumentSnapshot document){
+     final _width = MediaQuery.of(context).size.width;
+    final _height = MediaQuery.of(context).size.height;
+    bool emergency = false;
+  return new Stack(children: <Widget>[
+      new Container(color: Color(0xffee98fb),),
+      new Image.network( document['profile_path'], fit: BoxFit.fill,),
       new BackdropFilter(
       filter: new ui.ImageFilter.blur(
       sigmaX: 6.0,
@@ -113,7 +128,7 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       child: new Container(
       decoration: BoxDecoration(
-      color:  Colors.blue.withOpacity(0.9),
+      color:  Colors.purple[300].withOpacity(0.9),
       borderRadius: BorderRadius.all(Radius.circular(50.0)),
       ),)),
       new Scaffold(
@@ -122,62 +137,110 @@ class _MyHomePageState extends State<MyHomePage> {
             centerTitle: false,
             elevation: 0.0,
             backgroundColor: Colors.transparent,
+            actions: <Widget>[
+            // action button
+            IconButton(
+              icon: Icon(Icons.power_settings_new),
+              onPressed: () {
+                _signOut();
+              },
+            ),
+            ],
           ),
-          drawer: new Drawer(child: new Container(),),
+          
           backgroundColor: Colors.transparent,
           body: new Center(
             child: new Column(
               children: <Widget>[
                 new SizedBox(height: _height/12,),
-                new CircleAvatar(radius:_width<_height? _width/4:_height/4,backgroundImage: NetworkImage(profile.imageUrl), ),
+                new CircleAvatar(radius:_width<_height? _width/4:_height/4,backgroundImage: NetworkImage(document['profile_path']), ),
                 new SizedBox(height: _height/25.0,),
                 
-                new Text(profile.email, style: new TextStyle(fontWeight: FontWeight.bold, fontSize: _width/15, color: Colors.white),),
+                new Text(document['name'], style: new TextStyle(fontWeight: FontWeight.bold, fontSize: _width/15, color: Colors.white),),
                 new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),
                   
                 ),
+                new Text('Activa el Mode Emergencia',style: TextStyle(color: Colors.white),),
+              Transform.scale(
+                scale: 1.25,
+                child:
+                  Switch(
+                value: emergency,
+                
+                onChanged: (value) {
+                  setState(() {
+                    emergency = value;
+                  });
+                },
+                activeTrackColor: Color(0xffee98fb), 
+                activeColor: Colors.purple[300],
+              ),
+              ),
+              
               ],
             ),
           ),
           floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xff883997),
         onPressed: getImage,
         tooltip: 'Pick Image',
         child: Icon(Icons.add_a_photo),
       ),
          bottomNavigationBar: BottomNavigationBar(
+                
                 items: <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
-                  BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('alerta')),
-                  BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('School')),
+                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
+                  BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
+                  BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
                 currentIndex: 2,
-                fixedColor: Colors.deepPurple,
+                fixedColor: Color(0xff883997),
                 onTap: _onItemTapped,
               ),
       )
-    ],);
+    ],
+   );
+  }
+   
+  @override
+  Widget build(BuildContext context) {
+
+    return StreamBuilder(stream:  Firestore.instance.collection('Usuarias').where("email",isEqualTo: userEmail).snapshots() ,
+    builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+      if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
+      return AnimatedOpacity(duration: Duration(seconds:1),
+      opacity: true ? 1.0 : 0.0,
+      child: _buildListItem(context,snapshot.data.documents[0]));
+       
+      
+                      
+    }
+    );
+    
+   
   }
 void _onItemTapped(int index) {
-  
+  _selectedIndex = index;
     setState(() {
-       _selectedIndex = index;
+      
       switch(index){
         case 0: {
-           Navigator.push(context,MaterialPageRoute(builder: (context) => AdminList()),);
+           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => AdminList()),);
         }
         break;
         case 1: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => ActiveList()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => ActiveList()),);
         }
         break;
         case 2: {
-          
+      
         }
         break;
       }
       
     });
   }
+  
   Widget rowCell(int count, String type) => new Expanded(child: new Column(children: <Widget>[
     new Text('$count',style: new TextStyle(color: Colors.white),),
     new Text(type,style: new TextStyle(color: Colors.white, fontWeight: FontWeight.normal))

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'RealTimeLocationOff.dart';
 import 'database.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
@@ -19,7 +20,7 @@ void initState(){
       
 
   }
-  @override
+   @override
   Widget build(BuildContext context) {
     return MaterialApp(
        supportedLocales: [  
@@ -75,12 +76,17 @@ class MyHomePage extends StatefulWidget {
   
   
   @override
-  IncidenceActiveList createState() => IncidenceActiveList();
+  IncidenceList createState() => IncidenceList();
 }
 
-class IncidenceActiveList extends State<MyHomePage> {
+class IncidenceList extends State<MyHomePage> {
   int _counter = 0;
-
+  var userName = "";
+  @override   
+  initState() {
+    super.initState();
+    _getIncidenceId();
+  }
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -91,11 +97,14 @@ class IncidenceActiveList extends State<MyHomePage> {
       _counter++;
     });
   }
-  void _createIncident(){
-
+  _getIncidenceId() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+   setState(() {
+     userName = prefs.get("user");
+   }); 
      // Database.createIncidence();
   }
-int _selectedIndex = 1;
+
   @override
   Widget build(BuildContext context) {
      int _selectedIndex = 1;
@@ -108,21 +117,29 @@ int _selectedIndex = 1;
     return Scaffold(
         appBar: AppBar(
           title: Text("Historial d'Incidencias"),
+          backgroundColor: Colors.purple[300],
         ),
         body:  StreamBuilder(
-                stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").snapshots(),
+                stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                   if (!snapshot.hasData) return new Text('Loading...');
                   return new ListView(
+                    padding: EdgeInsets.all(8.0),
+                    
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
                       
-                        return new ListTile(
-                        leading: new Icon(Icons.error),
-                        title: new Text('Incidencia'),
-                        subtitle: new Text(document['name'] + ' | ' + document['created']),
+                      return new 
+                      Card(
+                        color:Color(0xffee98fb),
                         
+                        child:ListTile(
+                        leading: new Icon(Icons.report,color:Color(0xff883997),size: 50,),
+                        contentPadding: EdgeInsets.all(8.0),
+                        title: new Text('Incidencia'),        
+                        subtitle: new Text(document['name'] + ' | ' + document['created']),
+                        onLongPress: ()=>_assignIncidence(document['unique_id']),
+                      ),
                       );
-                      
                       
                     }).toList(),
                   );
@@ -130,12 +147,12 @@ int _selectedIndex = 1;
               ),
               bottomNavigationBar: BottomNavigationBar(
                 items: <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
+                 BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
                   BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
                 currentIndex: 0,
-                fixedColor: Colors.deepPurple,
+                fixedColor: Color(0xff883997),
                 onTap: _onItemTapped,
               ),
         
@@ -145,19 +162,17 @@ int _selectedIndex = 1;
 
     void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
       switch(index){
-         
         case 0: {
-           
+          
         }
         break;
         case 1: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => ActiveList()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => ActiveList()),);
         }
         break;
         case 2: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
         }
         break;
       }
@@ -170,16 +185,12 @@ int _selectedIndex = 1;
       uid = prefs.getString("user");
       return uid ;
   }
+  
   _assignIncidence(String unique_id) async{
-   SharedPreferences prefs = await SharedPreferences.getInstance();
-    String id_admin = prefs.get("user");
-    double latitude_admin = 0.00;
-    double longitude_admin = 0.00;
-    var now = new DateTime.now();
-    String fecha_admin = DateFormat('dd-MM-yyyy - kk:mm').format(now);
-    String name_admin = prefs.get("userName");
-    Database.selectIncidence(id_admin, fecha_admin, latitude_admin.toString(), longitude_admin.toString(), name_admin, unique_id);
-    Navigator.push(context,MaterialPageRoute(builder: (context) => RealTimeLocationAdmin()),);
-
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("incidenceId",unique_id);
+     Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocationOff()));
   }
+  
+ 
 }

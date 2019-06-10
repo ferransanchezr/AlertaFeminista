@@ -5,25 +5,25 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'AdminUserProfile.dart';
+
+import 'IncidenceAdminList.dart';
+import 'RealTimeLocationAdmin.dart';
+import 'RealTimeLocationOff.dart';
 import 'database.dart';
+import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
-import 'RealTimeLocationAdmin.dart';
-import 'AdminuserProfile.dart';
-import 'IncidenceAdminList.dart';
+import 'userButton.dart';
+import 'userProfile.dart';
+import 'RealTimeLocationLoad.dart';
 
 void main() => runApp(ActiveList());
 
 class ActiveList extends StatelessWidget {
-getUserId() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String uid = "";
-      uid = prefs.getString("user");
-      return uid ;
-  }
+
 void initState(){
-  String uid = getUserId();
-   Database.getAdminName(uid);
+   
       
 
   }
@@ -83,12 +83,17 @@ class MyHomePage extends StatefulWidget {
   
   
   @override
-  IncidenceActiveList createState() => IncidenceActiveList();
+  IncidenceList createState() => IncidenceList();
 }
 
-class IncidenceActiveList extends State<MyHomePage> {
+class IncidenceList extends State<MyHomePage> {
   int _counter = 0;
-
+  var userName = "";
+  @override   
+  initState() {
+    super.initState();
+    _getIncidenceId();
+  }
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -99,14 +104,17 @@ class IncidenceActiveList extends State<MyHomePage> {
       _counter++;
     });
   }
-  void _createIncident(){
-
+  _getIncidenceId() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+   setState(() {
+     userName = prefs.get("user");
+   }); 
      // Database.createIncidence();
   }
-  int _selectedIndex = 1;
+
   @override
   Widget build(BuildContext context) {
-   
+     int _selectedIndex = 1;
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
@@ -115,22 +123,30 @@ class IncidenceActiveList extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
         appBar: AppBar(
-          title: Text("Historial d'Incidencias"),
+          title: Text("Incidencies Actives"),
+          backgroundColor: Colors.purple[300],
         ),
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "true").snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                   if (!snapshot.hasData) return new Text('Loading...');
                   return new ListView(
+                    padding: EdgeInsets.all(8.0),
+                    
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
                       
-                        return new ListTile(
-                        leading: new Icon(Icons.error),
-                        title: new Text('Incidencia'),
+                      return new 
+                      Card(
+                        color:Color(0xffee98fb),
+                        
+                        child:ListTile(
+                        leading: new Icon(Icons.report,color:Color(0xff883997),size: 50,),
+                        contentPadding: EdgeInsets.all(8.0),
+                        title: new Text('Incidencia'),        
                         subtitle: new Text(document['name'] + ' | ' + document['created']),
-                        onLongPress: ()=>_assignIncidence(document.documentID),
+                        onLongPress: ()=>_assignIncidence(document['unique_id']),
+                      ),
                       );
-                      
                       
                     }).toList(),
                   );
@@ -143,7 +159,7 @@ class IncidenceActiveList extends State<MyHomePage> {
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
                 currentIndex: 1,
-                fixedColor: Colors.deepPurple,
+                fixedColor: Color(0xff883997),
                 onTap: _onItemTapped,
               ),
         
@@ -151,38 +167,42 @@ class IncidenceActiveList extends State<MyHomePage> {
     
   }
 
-    void _onItemTapped(int index) {
+     void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index;
       switch(index){
         case 0: {
-           Navigator.push(context,MaterialPageRoute(builder: (context) => AdminList()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => AdminList()),);
         }
         break;
         case 1: {
-         
+          
         }
         break;
         case 2: {
-          Navigator.push(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
         }
         break;
       }
       
     });
   }
-  
-  _assignIncidence(String unique_id) async{
-    SharedPreferences prefs = await SharedPreferences.getInstance();
+  getUserId() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String uid = "";
+      uid = prefs.getString("user");
+      return uid ;
+  }
+   _assignIncidence(String unique_id) async{
+   SharedPreferences prefs = await SharedPreferences.getInstance();
     String id_admin = prefs.get("user");
     double latitude_admin = 0.00;
     double longitude_admin = 0.00;
     var now = new DateTime.now();
     String fecha_admin = DateFormat('dd-MM-yyyy - kk:mm').format(now);
-
     String name_admin = prefs.get("userName");
     prefs.setString("incidenceId",unique_id);
     Database.selectIncidence(id_admin, fecha_admin, latitude_admin.toString(), longitude_admin.toString(), name_admin, unique_id);
     Navigator.push(context,MaterialPageRoute(builder: (context) => RealTimeLocationAdmin()),);
+
   }
 }

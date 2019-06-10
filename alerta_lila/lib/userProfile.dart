@@ -168,6 +168,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 onChanged: (value) {
                   setState(() {
                     emergency = value;
+                  
                   });
                 },
                 activeTrackColor: Color(0xffee98fb), 
@@ -187,8 +188,8 @@ class _MyHomePageState extends State<MyHomePage> {
          bottomNavigationBar: BottomNavigationBar(
                 
                 items: <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
-                  BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('alerta')),
+                 BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
+                  BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],
                 currentIndex: 2,

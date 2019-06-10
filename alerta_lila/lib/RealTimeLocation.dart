@@ -107,6 +107,10 @@ _setPolygons(){
     ),
   ];
 }
+_setState(String state) async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("state", state);
+}
 _syncState() async {
    var id = await _getinidenceId();
     id = id.toString();
@@ -121,7 +125,7 @@ _syncState() async {
         // Do something with change
         print("this was changed, " + querySnapshot.data['open'] );
         if(state!=querySnapshot.data['open'] ){
-          
+          _setState(querySnapshot.data['open']);
           Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
         }
         
@@ -253,9 +257,11 @@ _syncLocation() async {
       incidenceId = prefs.get("incidenceId");
       latitude_user = l.latitude;
       longitude_user = l.longitude;
+      //Database.createMessage("Inici Sessió", "automatic");
     });
     Database.setLocation(l.latitude, l.longitude, uid); 
     Database.setIncidenceLocationUser(l.latitude,l.longitude,incidenceId);
+    
    // getUserLocation(incidenceId);
     
     }//end GetLocation
@@ -315,7 +321,11 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                                 child: 
                                 Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
                                   children: <Widget>[
-                                  telefon,chat
+                                  telefon,
+                                  new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){
+                                    Navigator.push(context,MaterialPageRoute(builder: (context) => chatPage()),);
+                                  }
+                                  ,),
                                   ],
                                  ),
                                 ),      
@@ -344,6 +354,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                     if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
                     
                     return new ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
                       itemExtent: 600.00,
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
@@ -375,7 +386,9 @@ final telefon =
    new
    IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
   
-  final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){ }
+  final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){
+    
+   }
   ,);
   void _onMapCreated(GoogleMapController controller) {
     

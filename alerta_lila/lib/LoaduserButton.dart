@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'package:intl/intl.dart';
@@ -26,6 +27,7 @@ class LoadUserButton extends StatefulWidget {
 class _Button extends State<LoadUserButton> {
   int _selectedIndex = 1;
   String id = "";
+  String admin = "";
  
 
   final _widgetOptions = [
@@ -37,12 +39,42 @@ class _Button extends State<LoadUserButton> {
   initState() {
     super.initState();
     getUserId();
-    Database.getAdmin();
-    
-    _activeIncidence();
+   _syncState();  
+  //  _activeIncidence();
     
   }
+ _syncState() async {
+   var id = await _getUserId();
+    id = id.toString();
+    var state = await _getState();
+    state = state.toString();
  
+    
+    DocumentReference reference = Firestore.instance.collection('Usuarias').document(id);
+    
+    reference.snapshots().listen((querySnapshot) {
+      
+        // Do something with change
+        print("this was changed, " );
+        admin = querySnapshot.data['admin'];
+        
+       
+        
+        if(admin=="true"){
+         _setAdmin(admin);
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> ActiveList()));
+          
+       }
+       else{
+          
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));//que vaya a una de carga standard
+          }
+    });
+}
+_setAdmin(String state)async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  prefs.setString("admin", state);
+}
   @override
   Widget build(BuildContext context) {
     
@@ -67,25 +99,38 @@ class _Button extends State<LoadUserButton> {
       ),
     );
   }
-  getUserId() async{
+  _getUserId() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String uid = "";
       uid = prefs.getString("user");
       return uid ;
   }
- 
+ _getState() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String uid = "";
+      uid = prefs.getString("user");
+      return uid ;
+  }
+  getUserId() async{
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      setState(() {
+        id = prefs.getString("user");
+      });
+  }
+
 
  Future<Null>  _activeIncidence() async{
    
      String uid = "";
      String state = "";
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString("state","false");
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("state","false");
+    
      Route route2 = MaterialPageRoute(builder: (context) => ActiveList());
      
     
-       if(prefs.get("admin")=="true"){
-         
+       if(admin=="true"){
+         prefs.setString("admin",admin);
               Navigator.pushReplacement(
           context,
           route2,
@@ -94,20 +139,12 @@ class _Button extends State<LoadUserButton> {
        }
        else{
           
-          
-          await Database.getIncidenceOpen(uid).then((option) {
-          Database.getIncidenceState();
-          state = prefs.get("state");
-          if(state == "true"){
-            //check if incendenceID exists 
-            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-          }else if (state == "false"){
             Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));//que vaya a una de carga standard
           }
-          });
+          
        }
              
-    }
+    
  
   void _onItemTapped(int index) {
     setState(() {
@@ -129,7 +166,7 @@ class _Button extends State<LoadUserButton> {
     });
   }
    void _createIncident() async{
-    String id = await getUserId();
+    String id = await _getUserId();
     var now = new DateTime.now();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("incidence_data", now.toString());

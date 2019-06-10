@@ -42,6 +42,7 @@ class FireMapState extends State<FireMap> {
   var longitude_user = 0.00;
   Location location = new Location();
   Timer timer;
+  bool incidenceSwitch = false;
   String nombreUser = "";
   String nombreAdmin = "";
   String close = "";
@@ -230,6 +231,20 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
         appBar: AppBar(
           title: Text("Incidencia"),
            backgroundColor: Colors.purple[300],
+            actions:  <Widget>[
+             Switch(
+                value: incidenceSwitch,
+                
+                onChanged: (value) {
+                  setState(() {
+                    incidenceSwitch = value;
+                    Database.incidenceSwitch(value);
+                  });
+                },
+                activeTrackColor: Color(0xffee98fb), 
+                activeColor: Colors.purple[300],
+              ),
+           ] 
         ),
         body: StreamBuilder( 
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
