@@ -196,13 +196,17 @@ static Future<String> downloadImage(String uid) async {
  }
 
 
- static createUser( String email,String uid, context) {
+ static createUser( String email,String uid, context,token) {
    bool create = true;
     final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
      reference.snapshots().listen((datasnapshot){
+       if(token==null){
+        token = " ";
+      }
       if(datasnapshot.exists){
         create = false;
       }
+      
       else{
         List<String> name = email.split('@');
         var user = <String, dynamic>{
@@ -211,7 +215,8 @@ static Future<String> downloadImage(String uid) async {
           'admin' : 'false',
           'latitude' : '0.00',
           'longitude': '0.00',
-          'profile_path' : ' '
+          'profile_path' : ' ',
+          'token': token
         };
         
        

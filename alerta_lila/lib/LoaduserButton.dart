@@ -56,7 +56,12 @@ class _Button extends State<LoadUserButton> {
       
         // Do something with change
         print("this was changed, " );
-        admin = querySnapshot.data['admin'];
+        if(querySnapshot.data['admin']==null){
+          
+        }else{
+           admin = querySnapshot.data['admin'];
+        }
+       
         
        
         

@@ -355,7 +355,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                     
                     return new ListView.builder(
                       physics: const NeverScrollableScrollPhysics(),
-                      itemExtent: 600.00,
+                      itemExtent: 500.00,
                       itemCount: snapshot.data.documents.length,
                       itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
                       );

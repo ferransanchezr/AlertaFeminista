@@ -55,7 +55,10 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("user",user.uid);
     prefs.setString("email",user.email);
-    Database.createUser(user.email, user.uid,context);
+    var userName = user.email.split("@");
+    prefs.setString("userName", userName[0]);
+    var token = prefs.get("token");
+    Database.createUser(user.email, user.uid,context,token);
     
     
     

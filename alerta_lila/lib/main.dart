@@ -1,3 +1,4 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -77,11 +78,33 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  
+  FirebaseMessaging firebaseMessaging = new FirebaseMessaging();
   /*Función: Inicializa las variables, carga los datos neccesarios y seguidamente redirecciona 
   hacia la pantalla de autentiación*/
+   _update(String token) async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    prefs.setString("token",token);
+    }
   @override
   initState(){
+
+    firebaseMessaging.configure(
+      onLaunch: (Map<String,dynamic> msg){
+        print("onlaunch called");
+      },
+      onResume: (Map<String, dynamic> msg){
+        print("onresume called");
+      },
+      onMessage: (Map<String, dynamic> msg){
+        print(" onmessage called2");
+      }
+    );
+     firebaseMessaging.getToken().then((token){
+        _update(token);
+      });
+   
+   
+   
     WidgetsBinding.instance
         .addPostFrameCallback((_) =>Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoginPage())) );
        
