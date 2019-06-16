@@ -215,6 +215,7 @@ static Future<String> downloadImage(String uid) async {
           'admin' : 'false',
           'latitude' : '0.00',
           'longitude': '0.00',
+          'phone': '695745155',
           'profile_path' : ' ',
           'token': token
         };

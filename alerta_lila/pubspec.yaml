@@ -43,6 +43,7 @@ dependencies:
   threading: ^0.0.10
   url_launcher: ^5.0.2
   transparent_image: ^1.0.0
+  flutter_launcher_icons: ^0.7.2
   
   image: ^2.1.4
   
@@ -51,7 +52,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
 
-
+flutter_icons:
+  ios: true
+  android: true
+  image_path_ios: "resources/images/ic_launcher.png"
+  image_path_android: "resources/images/ic_launcher.png"
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
@@ -69,6 +74,8 @@ flutter:
     - resources/lang/es.json
     - resources/lang/en.json
     - resources/images/circle.png
+    - resources/images/ic_launcher.png
+    - resources/images/icon_auth.png
   #  - images/a_dot_ham.jpeg
 
   # An image asset can refer to one or more resolution-specific "variants", see

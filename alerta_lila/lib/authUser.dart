@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:transparent_image/transparent_image.dart';
 import 'database.dart';
 import 'userProfile.dart';
 import 'RealTimeLocation.dart';
@@ -141,7 +142,7 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
          
         },
         padding: EdgeInsets.all(12),
-        color: Colors.purpleAccent,
+        color: Colors.purple[300],
         child: Text('Log In', style: TextStyle(color: Colors.white)),
       ),
     );
@@ -163,7 +164,13 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
           shrinkWrap: true,
           padding: EdgeInsets.only(left: 24.0, right: 24.0),
           children: <Widget>[
-            
+           
+        
+                            
+                         
+            Image.asset(
+                'resources/images/icon_auth.png', width: 350 ,height: 350,
+              ),
             SizedBox(height: 48.0),
             email,
             SizedBox(height: 8.0),

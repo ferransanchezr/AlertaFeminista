@@ -29,7 +29,7 @@ class AdminUserProfile extends StatelessWidget {
     return new MaterialApp(
       title: 'Perfil usuària',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.purple,
       ),
       home: new MyHomePage(title: 'Perfil usuària'),
     );
@@ -160,7 +160,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),
                   
                 ),
-                new Text('Activa el Mode Emergencia',style: TextStyle(color: Colors.white),),
+                new Text('Activa el Mode Usuaria',style: TextStyle(color: Colors.white),),
               Transform.scale(
                 scale: 1.25,
                 child:

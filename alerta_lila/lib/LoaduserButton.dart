@@ -85,11 +85,9 @@ _setAdmin(String state)async{
     
      
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Botó Alerta'),
-      ),
+      
       body:  Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator( backgroundColor: Colors.purple[300]),
          
       ),
       bottomNavigationBar: BottomNavigationBar(

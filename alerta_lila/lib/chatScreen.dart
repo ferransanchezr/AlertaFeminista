@@ -24,6 +24,7 @@ class ChatScreenState extends State<ChatScreen> {
    String _imageUrl = "";
    File _image;
    String path_message = 'Incidencias/temp';
+   ScrollController _scrollController = new ScrollController();
    _getPreferences() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       uniqueId = prefs.getString("incidenceId");
@@ -39,6 +40,7 @@ class ChatScreenState extends State<ChatScreen> {
   @override
   initState() {
     _getPreferences();
+    
    
   }
   getUserId() async{
@@ -55,18 +57,25 @@ class ChatScreenState extends State<ChatScreen> {
   }
   
   void _handleSubmit(String text) {
-    _chatController.clear();
-      ChatMessage message = new ChatMessage(
-        text: text
-    );
-    //Future.wait(_getUserName());
+    if (_chatController.text.isNotEmpty){
 
-        Database.createMessage(text,name);
-  
-   
-    setState(() {
-       _messages.insert(0, message);
-    });
+      _chatController.clear();
+        ChatMessage message = new ChatMessage(
+          text: text
+      );
+      //Future.wait(_getUserName());
+      
+          Database.createMessage(text,name);
+    
+    
+      setState(() {
+        _messages.insert(0, message);
+          _scrollController.animateTo(
+              _scrollController.position.maxScrollExtent+10.0,            curve: Curves.easeOut,
+              duration: const Duration(milliseconds: 300),
+            );
+      });
+    }
 }
 
   Widget _chatEnvironment (){
@@ -122,6 +131,7 @@ class ChatScreenState extends State<ChatScreen> {
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
                   if (!snapshot.hasData) return new Text('No hi ha Missatges');
                   return new ListView(
+                    controller: _scrollController,
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
                       if(document['type'] == "image") {
                           return Stack(

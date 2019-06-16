@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'RealTimeLocationOff.dart';
+import 'RealTimeLocationOffAdmin.dart';
 import 'database.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
@@ -133,7 +134,7 @@ class IncidenceList extends State<MyHomePage> {
                         color:Color(0xffee98fb),
                         
                         child:ListTile(
-                        leading: new Icon(Icons.report,color:Color(0xff883997),size: 50,),
+                        leading: new Icon(Icons.location_on,color:Color(0xff883997),size: 50,),
                         contentPadding: EdgeInsets.all(8.0),
                         title: new Text('Incidencia'),        
                         subtitle: new Text(document['name'] + ' | ' + document['created']),
@@ -189,7 +190,7 @@ class IncidenceList extends State<MyHomePage> {
   _assignIncidence(String unique_id) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("incidenceId",unique_id);
-     Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocationOff()));
+     Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocationOffAdmin()));
   }
   
  

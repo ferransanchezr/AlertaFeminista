@@ -129,7 +129,7 @@ class IncidenceList extends State<MyHomePage> {
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "true").snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                  if (!snapshot.hasData) return new Text('Loading...');
+                  if (!snapshot.hasData) return new CircularProgressIndicator( backgroundColor: Colors.purple[300]);
                   return new ListView(
                     padding: EdgeInsets.all(8.0),
                     
@@ -140,7 +140,7 @@ class IncidenceList extends State<MyHomePage> {
                         color:Color(0xffee98fb),
                         
                         child:ListTile(
-                        leading: new Icon(Icons.report,color:Color(0xff883997),size: 50,),
+                        leading: new Icon(Icons.location_on,color:Color(0xff883997),size: 50,),
                         contentPadding: EdgeInsets.all(8.0),
                         title: new Text('Incidencia'),        
                         subtitle: new Text(document['name'] + ' | ' + document['created']),

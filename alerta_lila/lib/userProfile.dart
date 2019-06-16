@@ -27,7 +27,7 @@ class UserProfile extends StatelessWidget {
     return new MaterialApp(
       title: 'Perfil usuària',
       theme: new ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.grey,
       ),
       home: new MyHomePage(title: 'Perfil usuària'),
     );
