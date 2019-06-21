@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:alerta_lila/userButtonEmergency.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
@@ -9,10 +10,11 @@ import 'IncidenceActiveList.dart';
 import 'localizationDelegate.dart';
 import 'IncidenceList.dart';
 import 'authUser.dart';
-import 'Database.dart';
+import 'database.dart';
 import 'RealTimeLocation.dart';
 import 'userProfile.dart';
 import 'userButton.dart';
+import 'userButtonEmergency.dart';
 
 void main() => runApp(LoadUserButton());
 
@@ -28,6 +30,8 @@ class _Button extends State<LoadUserButton> {
   int _selectedIndex = 1;
   String id = "";
   String admin = "";
+  String emergency = "";
+  
  
 
   final _widgetOptions = [
@@ -48,6 +52,7 @@ class _Button extends State<LoadUserButton> {
     id = id.toString();
     var state = await _getState();
     state = state.toString();
+   
  
     
     DocumentReference reference = Firestore.instance.collection('Usuarias').document(id);
@@ -71,15 +76,20 @@ class _Button extends State<LoadUserButton> {
           
        }
        else{
+        
+             
+                Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context)=> UserButtonEmergency()));
+              
+            }//que vaya a una de carga standard
           
-            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));//que vaya a una de carga standard
-          }
+       
     });
 }
 _setAdmin(String state)async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   prefs.setString("admin", state);
 }
+
   @override
   Widget build(BuildContext context) {
     
@@ -92,8 +102,8 @@ _setAdmin(String state)async{
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
-          BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('alerta')),
+          BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
+          BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('Alerta')),
           BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('School')),
         ],
         currentIndex: _selectedIndex,
@@ -108,6 +118,7 @@ _setAdmin(String state)async{
       uid = prefs.getString("user");
       return uid ;
   }
+ 
  _getState() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String uid = "";
@@ -118,6 +129,7 @@ _setAdmin(String state)async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       setState(() {
         id = prefs.getString("user");
+        emergency = prefs.getString("emergencia");
       });
   }
 
@@ -142,7 +154,7 @@ _setAdmin(String state)async{
        }
        else{
           
-            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));//que vaya a una de carga standard
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButtonEmergency()));//que vaya a una de carga standard
           }
           
        }
@@ -168,16 +180,16 @@ _setAdmin(String state)async{
       
     });
   }
-   void _createIncident() async{
-    String id = await _getUserId();
+   void _createIncident(id) async{
+    
     var now = new DateTime.now();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("incidence_data", now.toString());
     String fecha = DateFormat('dd-MM-yyyy - kk:mm').format(now);
     String name = await  Database.getUserData(id);
-
-    Database.createIncidence(id, fecha, name);
-    Navigator.push(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
+    String phone = prefs.get("phone");
+    Database.createIncidence(id, fecha, name,phone);
+    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
 
 
   }

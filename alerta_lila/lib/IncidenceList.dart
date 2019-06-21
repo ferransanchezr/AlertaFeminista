@@ -119,7 +119,7 @@ class IncidenceList extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
         appBar: AppBar(
-          title: Text("Historial d'Incidencias"),
+          title: Text("Historial d'Incidències"),
           backgroundColor: Colors.purple[300],
         ),
         body:  StreamBuilder(
@@ -138,7 +138,7 @@ class IncidenceList extends State<MyHomePage> {
                         child:ListTile(
                         leading: new Icon(Icons.location_on,color:Color(0xff883997),size: 50,),
                         contentPadding: EdgeInsets.all(8.0),
-                        title: new Text('Incidencia'),        
+                        title: new Text('Incidència'),        
                         subtitle: new Text(document['name'] + ' | ' + document['created']),
                         onLongPress: ()=>_assignIncidence(document['unique_id']),
                       ),
@@ -150,7 +150,7 @@ class IncidenceList extends State<MyHomePage> {
               ),
               bottomNavigationBar: BottomNavigationBar(
                 items: <BottomNavigationBarItem>[
-                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Home')),
+                  BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
                   BottomNavigationBarItem(icon: Icon(Icons.notifications_active), title: Text('Alerta')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
                 ],

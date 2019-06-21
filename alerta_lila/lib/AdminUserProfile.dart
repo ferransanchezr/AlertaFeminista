@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:alerta_lila/UserList.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -187,11 +188,12 @@ class _MyHomePageState extends State<MyHomePage> {
         child: Icon(Icons.add_a_photo),
       ),
          bottomNavigationBar: BottomNavigationBar(
-                
+                type: BottomNavigationBarType.fixed,
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
                   BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
+                  BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('Usuàries')),
                 ],
                 currentIndex: 2,
                 fixedColor: Color(0xff883997),
@@ -234,6 +236,10 @@ void _onItemTapped(int index) {
         break;
         case 2: {
       
+        }
+        break;
+        case 3: {
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserList()),);
         }
         break;
       }

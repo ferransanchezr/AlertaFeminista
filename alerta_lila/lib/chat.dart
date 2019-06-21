@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,8 +19,10 @@ class chatPage extends StatefulWidget {
 
 class _Chat extends State<chatPage> {
   String incidenceId = "";
+  String userId="";
   void initState(){
     _getIncidenceId();
+    _getUserId();
   }
   _getIncidenceId() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -26,6 +30,12 @@ class _Chat extends State<chatPage> {
      incidenceId = prefs.get("incidenceId");
     });
     
+  }
+  _getUserId()async{
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+    setState(() {
+     userId = prefs.get("user");
+    });
   }
   @override
   Widget build(BuildContext context) {
@@ -41,7 +51,12 @@ class _Chat extends State<chatPage> {
                      
                     if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
                      if(snapshot.data.documents.isNotEmpty){
-                       return _buildAppBar(context,snapshot.data.documents[0]);
+                       if(snapshot.data.documents[0]['id']==userId){
+                          return _buildAppBarAdmin(context,snapshot.data.documents[0]);
+                       }else{
+                         return _buildAppBar(context,snapshot.data.documents[0]);
+                       }
+                       
 
                     } else{
                         return new Center(child: CircularProgressIndicator());                  
@@ -65,19 +80,34 @@ scafoold(){
   return new Scaffold(
         
       appBar: new AppBar(
-        title: new Text("Chat de Emergencia"),
+        title: new Text("Xat d'emergència"),
       ),
       body: new ChatScreen()
       
     );
 }
-  _buildAppBar(BuildContext context,DocumentSnapshot document){
+  _buildAppBarAdmin(BuildContext context,DocumentSnapshot document){
   return  new AppBar(
-                        title: new Text("Chat d'Emergencia"),
+                        title: new Text("Xat d'emergència"),
                         backgroundColor: Colors.purpleAccent,
                         actions:  <Widget>[
                           IconButton(icon:Icon(Icons.phone),color: Colors.white,iconSize: 30.0,
-                          onPressed:()=> launch("tel://" + document['phone'] )
+                          onPressed:()=>launch("tel://"+ document['phone_admin'] )
+                            //log(document['phone']);
+                          
+                          ),
+                        ]
+                      );
+  }
+  _buildAppBar(BuildContext context,DocumentSnapshot document){
+  return  new AppBar(
+                        title: new Text("Xat d'emergència"),
+                        backgroundColor: Colors.purpleAccent,
+                        actions:  <Widget>[
+                          IconButton(icon:Icon(Icons.phone),color: Colors.white,iconSize: 30.0,
+                          onPressed:()=>launch("tel://"+ document['phone'] )
+                            //log(document['phone']);
+                          
                           ),
                         ]
                       );

@@ -6,6 +6,9 @@ import 'authUser.dart';
 import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
+import 'package:permission/permission.dart';
+
+
 import 'database.dart';
 
 void main() => runApp(MyApp());
@@ -84,10 +87,11 @@ class _MyHomePageState extends State<MyHomePage> {
    _update(String token) async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("token",token);
+    prefs.setString("phone",'695745155');
     }
   @override
   initState(){
-
+    _getPermission();
     firebaseMessaging.configure(
       onLaunch: (Map<String,dynamic> msg){
         print("onlaunch called");
@@ -103,13 +107,22 @@ class _MyHomePageState extends State<MyHomePage> {
         _update(token);
       });
    
-   
-   
+
+    
+
+
+    Permission.openSettings;
     WidgetsBinding.instance
         .addPostFrameCallback((_) =>Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoginPage())) );
        
   }
-  
+  _getPermission()async {
+    var permissions = await Permission.getPermissionsStatus([PermissionName.Internet, PermissionName.Location]);
+
+    var permissionNames = await Permission.requestPermissions([PermissionName.Internet, PermissionName.Location]);  
+
+    
+  }
     /*Widget: Carga
     Descripción: Este widget muestra un spinner de carga*/ 
   @override

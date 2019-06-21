@@ -94,6 +94,7 @@ _setPolygons(){
   var uid = prefs.getString("user");
   return uid ;
   }
+  
   //Crear el pin en googleMaps
   setMarker(){
      markers[markerId] = new Marker(

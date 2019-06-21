@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
@@ -56,14 +57,19 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("user",user.uid);
     prefs.setString("email",user.email);
-    var userName = user.email.split("@");
-    prefs.setString("userName", userName[0]);
+    DocumentReference reference = Firestore.instance.collection('Usuarias').document(user.uid);
+    
+    reference.snapshots().listen((querySnapshot) {
+       prefs.setString("userName", querySnapshot.data['name']);
+       prefs.setString("phone", querySnapshot.data['phone']);
+       prefs.setString("admin",querySnapshot.data['admin']);
+       prefs.setString("emergencia",querySnapshot.data['modeEmergencia']);
+    });
+
     var token = prefs.get("token");
-    Database.createUser(user.email, user.uid,context,token);
-    
-    
-    
-    
+    Database.updateToken(user.uid, token);
+    //Database.createUser(user.email, user.uid,context,token);
+     Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoadUserButton()) );
      return user;
 }
     _getPrefs()async{
@@ -143,7 +149,7 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
         },
         padding: EdgeInsets.all(12),
         color: Colors.purple[300],
-        child: Text('Log In', style: TextStyle(color: Colors.white)),
+        child: Text('Accedir-hi', style: TextStyle(color: Colors.white)),
       ),
     );
 

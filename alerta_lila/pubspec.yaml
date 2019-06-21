@@ -44,7 +44,7 @@ dependencies:
   url_launcher: ^5.0.2
   transparent_image: ^1.0.0
   flutter_launcher_icons: ^0.7.2
-  
+  permission: ^0.1.2
   image: ^2.1.4
   
 

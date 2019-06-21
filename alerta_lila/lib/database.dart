@@ -84,7 +84,7 @@ static Future<String> downloadImage(String uid) async {
   return downloadUrl;
 }
 
- static  createIncidence(String uid,String fecha ,String name) async {
+ static  createIncidence(String uid,String fecha ,String name,String phone) async {
 
    
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -109,6 +109,7 @@ static Future<String> downloadImage(String uid) async {
       'latitude_admin': '0.00',
       'name_admin' : 'Administradora no Disponible',
       'created_admin': '',
+      'phone' : phone,
       'unique_id': uniqueId
 
       
@@ -119,7 +120,8 @@ static Future<String> downloadImage(String uid) async {
     reference.setData(incidencia);
     }
  //}
- static Future<String> selectIncidence(String uid_admin,String fecha_admin,String latitude_admin,String longitude_admin,String name_admin,String unique_id) async {
+
+ static Future<String> selectIncidence(String uid_admin,String fecha_admin,String latitude_admin,String longitude_admin,String name_admin,String unique_id, String phone) async {
     
     String uniqueId = unique_id;
     var name;
@@ -133,6 +135,7 @@ static Future<String> downloadImage(String uid) async {
       'latitude_admin': latitude_admin,
       'name_admin' : name,
       'created_admin': fecha_admin,
+      'phone_admin': phone
       
     };
 
@@ -195,7 +198,6 @@ static Future<String> downloadImage(String uid) async {
     reference.setData(mensaje);
  }
 
-
  static createUser( String email,String uid, context,token) {
    bool create = true;
     final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
@@ -217,12 +219,15 @@ static Future<String> downloadImage(String uid) async {
           'longitude': '0.00',
           'phone': '695745155',
           'profile_path' : ' ',
-          'token': token
+          'modeEmergencia': "false",
+          'token': token,
+          
         };
         
        
         if(create){
           reference.setData(user);
+          
           
         }
         
@@ -231,7 +236,80 @@ static Future<String> downloadImage(String uid) async {
     });
       Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoadUserButton()));
      }
+ static createFirstUser( String email,String uid,String phone,String name) {
+   bool create = true;
+    final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
+     reference.snapshots().listen((datasnapshot){
+      
+       String token = " ";
+      
+      if(datasnapshot.exists){
+        create = false;
+      }
+      
+      else{
         
+        var user = <String, dynamic>{
+          'name': name,
+          'email' : email,
+          'admin' : 'false',
+          'latitude' : '0.00',
+          'longitude': '0.00',
+          'phone': phone,
+          'profile_path' : ' ',
+          'modeEmergencia': "false",
+          'token': token,
+          
+        };
+        
+       
+        if(create){
+          reference.setData(user);
+          
+          
+        }
+        
+      }
+      
+    });
+     }
+
+     static updatetUser( String uid,String phone,String name) {
+   bool create = true;
+    final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
+     
+        
+        var user = <String, dynamic>{
+          'name': name,
+         
+          'phone': phone,
+          
+          
+        };
+        
+       
+        
+          reference.updateData(user);
+          
+          
+        
+        
+      
+     }
+  static updateToken( String uid,String token) {
+   bool create = true;
+    final DocumentReference reference = Firestore.instance.document("Usuarias/$uid") ;
+     
+        var user = <String, dynamic>{
+         
+          'token': token,
+          
+        };
+        
+          reference.updateData(user);
+      }
+
+     
      static Future<String> setOpen( String open ,String uid) async {
     
         
@@ -269,6 +347,7 @@ static Future<String> downloadImage(String uid) async {
         final DocumentReference reference = Firestore.instance.document("Incidencias/$uniqueId") ;
         reference.updateData(user);
      }
+   
        //set Admin Location at Incidence 
      static  setIncidenceLocationAdmin( double lat, double long,String uid) async {
         SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -319,6 +398,20 @@ static Future<String> downloadImage(String uid) async {
             
        });
        prefs.setString("userName",user);
+        return user;   
+     }
+    static Future<String> getUserPhone( String uid) async {
+      
+     SharedPreferences prefs = await SharedPreferences.getInstance();
+      String user = 'carregant dades';
+     
+         var reference =  Firestore.instance.collection('Usuarias').document(uid);
+          await reference.get().then((DocumentSnapshot ds) {
+           
+            user =  ds['phone'].toString();
+            
+       });
+       prefs.setString("phone",user);
         return user;   
      }
      //Conseguir el nombre de el admin a partir de una incidencia
@@ -464,9 +557,18 @@ static Future<String> downloadImage(String uid) async {
        
         prefs.setString("IncidentDate", open);  
      }
-    
+       //Mode Emergencia
+  static emergencySwitch(state,id) async{
+       SharedPreferences prefs = await SharedPreferences.getInstance();
+        var user = <String, dynamic>{
+         'modeEmergencia' : state.toString()
+         
+        };
+        final DocumentReference reference = Firestore.instance.document("Usuarias/$id") ;
+        reference.updateData(user);
+        prefs.setString("emergencia",state.toString());
+     }
       
     }
     
-    class Boolean {
-}
+   

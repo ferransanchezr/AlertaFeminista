@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 
 admin.initializeApp();
 
+
 var msgData;
 
 exports.newSubscriberNotification = functions.firestore
@@ -34,7 +35,9 @@ exports.newSubscriberNotification = functions.firestore
                     console.log(err);
                 });
             }
-        return 0}).catch((err)=>{
+        return 0
+    
+    }).catch((err)=>{
             console.log(err);
         });
     });
@@ -67,7 +70,8 @@ exports.newSubscriberNotification = functions.firestore
                     console.log(err);
                 });
             }
-        return 0}).catch((err)=>{
+        return 0
+    }).catch((err)=>{
             console.log(err);
         });
     });

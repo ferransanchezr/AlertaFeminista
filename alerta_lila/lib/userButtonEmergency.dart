@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:alerta_lila/userButton.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
@@ -13,17 +14,17 @@ import 'Database.dart';
 import 'RealTimeLocation.dart';
 import 'userProfile.dart';
 
-void main() => runApp(UserButton());
+void main() => runApp(UserButtonEmergency());
 
 
-class UserButton extends StatefulWidget {
-  UserButton({Key key}) : super(key: key);
+class UserButtonEmergency extends StatefulWidget {
+  UserButtonEmergency({Key key}) : super(key: key);
 
   @override
   _Button createState() => _Button();
 }
 
-class _Button extends State<UserButton> {
+class _Button extends State<UserButtonEmergency> {
   int _selectedIndex = 1;
   String id = "";
   Timer timer;
@@ -38,8 +39,7 @@ class _Button extends State<UserButton> {
   initState() {
     super.initState();
     getUserId();
-   _activeIncidence();
-  
+   _activeEmergencia();
 
   
      var thread = new Thread(() async{
@@ -131,6 +131,9 @@ _getState() async{
       if(route!=null){
         Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
       }
+      else{
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));
+      }
       }
      }
  }
@@ -154,6 +157,7 @@ _getState() async{
     setState(() {
       switch(index){
         case 0: {
+           timer.cancel();
            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => List()),);
         }
         break;
@@ -162,6 +166,7 @@ _getState() async{
         }
         break;
         case 2: {
+          timer.cancel();
           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserProfile()),);
         }
         break;

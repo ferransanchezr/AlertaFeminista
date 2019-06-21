@@ -277,15 +277,14 @@ getUserLocation()  async {
   }
  
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
-         return Row(
+         return Stack(
             
              children: [
-                       new Expanded(child: Column(
-                          children: <Widget>[
-                                  Expanded(
-                                    child: GoogleMap(
+                   
                                   
-                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude']) ,double.parse(document['longitude'])), zoom: 15),
+                                   GoogleMap(
+                                  
+                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude_admin']) ,double.parse(document['longitude_admin'])), zoom: 15),
                                     compassEnabled: false,
                                     onMapCreated: _onMapCreated,
                                     myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
@@ -294,57 +293,85 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                                     markers:  Set<Marker>.of(markers.values),
                                     polylines: Set<Polyline>.of(polygons),
                                 ),
-                              ),
-                             new Container(
-                               padding:  EdgeInsets.all(8.0),
-                                child: 
-                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                new Text("Administradora",style:TextStyle(color: Color(0xff883997),fontWeight: FontWeight.bold )),
-                                 new Text("Data de Creació",style: TextStyle(color: Color(0xff883997),fontWeight: FontWeight.bold ),),
-                                 
-                                  ],
-                                 ),
-                                ),
-                                new Container(
-                               padding:  EdgeInsets.all(8.0),
-                                child: 
-                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                               new Text(document['name_admin']),
-                                 new Text(document['created'])
-                                  ],
-                                 ),
-                                ),
-                                  new Container(
-                               padding:  EdgeInsets.all(15.0),
-                                child: 
-                                Row( mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                  children: <Widget>[
-                                  telefon,
-                                  new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: (){
-                                    Navigator.push(context,MaterialPageRoute(builder: (context) => chatPage()),);
-                                  }
-                                  ,),
-                                  ],
-                                 ),
-                                ),      
-                                        
-                                  ],
-                                  ),
-                                  ),
-                       ],
-                       
-                     );
+                                 new Container(
+                                   
+                                  child: new Center(
+                                    
+                                    child:new Column(
+                                   mainAxisAlignment: MainAxisAlignment.end,
+                                    children: <Widget>[ Card(
+                                    elevation: 8.0,
+                                    margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+                                    child: Container(
+                                      decoration: BoxDecoration(color: Colors.white),
+                                      child: 
+                                      
+                                      
+                                      
+                                      ListTile(
+        contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
+        leading: Container(
+          padding: EdgeInsets.only(right: 12.0),
+          decoration: new BoxDecoration(
+              border: new Border(
+                  right: new BorderSide(width: 1.0, color: Colors.black26))),
+          child: 
+          IconButton(icon: Icon(Icons.directions), color:  Colors.blue, iconSize: 40.0, onPressed:(){
+              
+              _launchMapsUrl(double.tryParse(document['latitude']), double.tryParse(document['longitude']));
 
+          }),
+          
+        ),
+        title: Text(
+          document['name_admin'],
+          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
+        // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
+
+        subtitle: Row(
+          children: <Widget>[
+            Icon(Icons.query_builder, color: Colors.purple[300]),
+            Text('  '+document['created'], style: TextStyle(color: Colors.grey))
+          ],
+        ),
+        trailing:
+            Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 30.0)),
+                                      
+                                    ),
+                                    ),
+                                    ],
+                                  ),
+                                  ),
+                                ),
+              ], 
+              );
+
+}
+void _launchMapsUrl(double lat, double lon) async {
+  final url = 'https://www.google.com/maps/search/?api=1&query=$latitude_admin,$longitude_admin';
+  if (await canLaunch(url)) {
+    await launch(url);
+  } else {
+    throw 'Could not launch $url';
+  }
 }
   //Generacion de la interface, UI
   @override
   Widget build(context) {
    // getCounter();
    return Scaffold(
+     floatingActionButton:
+      FloatingActionButton(
+        child: Icon(Icons.chat),
+        backgroundColor: Color(0xff883997),
+        foregroundColor: Colors.white,
+        onPressed: (){
+          Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);
+        },
+      ),
         appBar: AppBar(
-          title: Text("Incidencia"),
+          title: Text("Incidència"),
           backgroundColor: Colors.purple[300],
         ),
         body: StreamBuilder(
@@ -353,12 +380,15 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
                      
                     if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
                     
-                    return new ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemExtent: 500.00,
-                      itemCount: snapshot.data.documents.length,
-                      itemBuilder: (context,index) => _buildListItem(context,snapshot.data.documents[index]),
-                      );
+                  
+                    if(snapshot.data.documents.isNotEmpty){
+                       return _buildListItem(context,snapshot.data.documents[0]);
+
+                    } else{
+                        return new Center(child: CircularProgressIndicator());                  
+                    }
+                         
+                      
                     
                  }),
                     );

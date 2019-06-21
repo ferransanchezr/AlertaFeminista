@@ -10,6 +10,7 @@ import 'AdminUserProfile.dart';
 import 'IncidenceAdminList.dart';
 import 'RealTimeLocationAdmin.dart';
 import 'RealTimeLocationOff.dart';
+import 'UserList.dart';
 import 'database.dart';
 import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
@@ -123,7 +124,7 @@ class IncidenceList extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
         appBar: AppBar(
-          title: Text("Incidencies Actives"),
+          title: Text("Incidències actives"),
           backgroundColor: Colors.purple[300],
         ),
         body:  StreamBuilder(
@@ -142,7 +143,7 @@ class IncidenceList extends State<MyHomePage> {
                         child:ListTile(
                         leading: new Icon(Icons.location_on,color:Color(0xff883997),size: 50,),
                         contentPadding: EdgeInsets.all(8.0),
-                        title: new Text('Incidencia'),        
+                        title: new Text('Incidència'),        
                         subtitle: new Text(document['name'] + ' | ' + document['created']),
                         onLongPress: ()=>_assignIncidence(document['unique_id']),
                       ),
@@ -153,10 +154,12 @@ class IncidenceList extends State<MyHomePage> {
                 },
               ),
               bottomNavigationBar: BottomNavigationBar(
+                type: BottomNavigationBarType.fixed,
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
                   BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
+                  BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('Usuaries')),
                 ],
                 currentIndex: 1,
                 fixedColor: Color(0xff883997),
@@ -182,6 +185,9 @@ class IncidenceList extends State<MyHomePage> {
           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
         }
         break;
+        case 3: {
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserList()),);
+        }
       }
       
     });
@@ -201,7 +207,8 @@ class IncidenceList extends State<MyHomePage> {
     String fecha_admin = DateFormat('dd-MM-yyyy - kk:mm').format(now);
     String name_admin = prefs.get("userName");
     prefs.setString("incidenceId",unique_id);
-    Database.selectIncidence(id_admin, fecha_admin, latitude_admin.toString(), longitude_admin.toString(), name_admin, unique_id);
+    String phone = prefs.get("phone");
+    Database.selectIncidence(id_admin, fecha_admin, latitude_admin.toString(), longitude_admin.toString(), name_admin, unique_id,phone);
     Navigator.push(context,MaterialPageRoute(builder: (context) => RealTimeLocationAdmin()),);
 
   }
