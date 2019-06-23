@@ -106,7 +106,7 @@ _setAdmin(String state)async{
     return Scaffold(
       
       body:  Center(
-        child: CircularProgressIndicator( backgroundColor: Colors.purple[300]),
+        child: CircularProgressIndicator(),
          
       ),
       bottomNavigationBar: BottomNavigationBar(

@@ -21,6 +21,7 @@ class ChatScreenState extends State<ChatScreen> {
   final List<ChatMessage> _messages = <ChatMessage>[];
    String uniqueId;
    String name;
+   String userName;
    String _imageUrl = "";
    File _image;
    String path_message = 'Incidencias/temp';
@@ -28,6 +29,7 @@ class ChatScreenState extends State<ChatScreen> {
    _getPreferences() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       uniqueId = prefs.getString("incidenceId");
+      userName = prefs.getString("userName");
      
      setState(() {
        path_message = 'Incidencias/' + uniqueId + '/Mensajes';
@@ -54,6 +56,31 @@ class ChatScreenState extends State<ChatScreen> {
     var image = await ImagePicker.pickImage(source: ImageSource.camera,maxWidth: 200,maxHeight: 200);
     _image = image;
     Database.uploadChatImage(_image,id);
+  }
+   _isMePadding(name){
+     if(name == userName){
+       return EdgeInsets.only(top:15.0,bottom:15.0,left:50.0,right:5.0);
+     
+     }
+     else{
+        return EdgeInsets.only(top:15.0,bottom:15.0,left:5.0,right:50);
+     }
+   }
+  _isMe(name){
+     if(name == userName){
+                       return BorderRadius.only(
+                        topLeft: Radius.circular(15.0),
+                        bottomLeft: Radius.circular(15.0),
+                        bottomRight: Radius.circular(15.0),
+                        );
+                      }
+                      else{
+                         return BorderRadius.only(
+                          topRight: Radius.circular(15.0),
+                          bottomLeft: Radius.circular(15.0),
+                          bottomRight: Radius.circular(15.0),
+                        );
+                      };
   }
   
   void _handleSubmit(String text) {
@@ -129,55 +156,116 @@ class ChatScreenState extends State<ChatScreen> {
             child: StreamBuilder(
                 stream: Firestore.instance.collection(path_message).orderBy('created').snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                  if (!snapshot.hasData) return new Text('No hi ha Missatges');
+                  if (!snapshot.hasData) return new CircularProgressIndicator();
                   return new ListView(
+                    
                     controller: _scrollController,
                     children: snapshot.data.documents.map((DocumentSnapshot document) {
+                      
                       if(document['type'] == "image") {
-                          return Stack(
+                         return 
+                           
+                        Padding(padding: _isMePadding(document['name']),
+                            child:
+                         Stack(
                           
                           children: <Widget>[
-                            Container(margin: new EdgeInsets.symmetric(vertical: 25.0,horizontal: 25.0),child: CircularProgressIndicator()),
+                            //Container(margin: new EdgeInsets.symmetric(vertical: 25.0),child: CircularProgressIndicator()),
                             Container(
-                              margin: new EdgeInsets.symmetric(horizontal: 10.0),
+                              
                               child:Text(document['created'], style: TextStyle(color:Colors.grey),),
                             ),
                             
                             Card(
                               
-                               margin: new EdgeInsets.symmetric(vertical: 20.0,horizontal: 10),
-                              color:Color(0xffee98fb),
+                               margin: new EdgeInsets.symmetric(vertical: 20.0),
+                              color:Colors.purple[300],
+                              shape: RoundedRectangleBorder(borderRadius: _isMe(document['name'])),
                               
                               child:
+                              //Padding(padding: _isMePadding(document['name']),
+                              
                               FadeInImage.memoryNetwork(
                                 
                                 placeholder: kTransparentImage,
                                 image: document['path'],
-                                width: 200.0,
-                                height: 150.0,
+                                width: 150,
+                                height: 150,
+                               
                               ),
                             
+                            //),
                             ),
                             
                            
                           ],
-                        );
+                        ),
+                        ); 
                       }
                      else if(document['admin']== "true"){
-                          return Container(color: Colors.purple[200],
+                          return 
+                          Padding(padding: _isMePadding(document['name']),
+                          child: 
+                          new Column(
+                            
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+
+                          
+                          
+                          new Container(
+                          
+                          decoration : BoxDecoration(
+                                        boxShadow: [
+                                          BoxShadow(
+                                              blurRadius: .5,
+                                              spreadRadius: 1.0,
+                                              color: Colors.black.withOpacity(.12))
+                                        ],
+                                        color: Colors.purple[200], 
+                                        borderRadius: _isMe(document['name']),
+                                      ),
                           child: ListTile(
                           leading: new Icon(Icons.pan_tool),
                           title: new Text(document['value']),
                           subtitle: new Text(document['name']),
                       ),
+                      
+                       ),
+                       ],),
                        );
                       }else{
-                      return Container(color: Colors.white,
+                      return 
+                          Padding(padding:_isMePadding(document['name'])
+                           ,
+                          child: 
+                          new Column(
+                            
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: <Widget>[
+
+                          
+                          
+                          new Container(
+                          
+                          decoration : BoxDecoration(
+                                        boxShadow: [
+                                          BoxShadow(
+                                              blurRadius: .5,
+                                              spreadRadius: 1.0,
+                                              color: Colors.black.withOpacity(.12))
+                                        ],
+                                        color: Colors.grey[100], 
+                                        borderRadius: _isMe(document['name']),
+                                      ),
                           child: ListTile(
                           leading: new Icon(Icons.person),
                           title: new Text(document['value']),
                           subtitle: new Text(document['name']),
                       ),
+                      
+                       ),
+                       ],),
                        );
                       }
                     }).toList(),
