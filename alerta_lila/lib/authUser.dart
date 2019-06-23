@@ -28,6 +28,7 @@ class _LoginPageState extends State<LoginPage> {
     final FirebaseAuth auth = FirebaseAuth.instance;
     SharedPreferences prefs;
     String errorCode = "";
+    bool loadAuth = false;
 
     @override 
     initState() {
@@ -82,6 +83,11 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
       if(prefs.getString("user")!=null){
         //existe un Usuario logged  
         _handleSignIn("", "");
+        }else{
+          setState(() {
+            loadAuth = true;  
+          });
+          
         }
         });
    }
@@ -110,11 +116,7 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
         
       ),
     );
-   
-   
-  
-   
- 
+
  
     final password = TextFormField(
       controller: passController,
@@ -166,15 +168,17 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
       backgroundColor: Colors.white,
       
       body: Center(
-        child: ListView(
+        child: _loginView(email, password, errorLabel, loginButton, forgotLabel)
+      ),
+    );
+  }
+  _loginView(email, password, errorLabel,loginButton,forgotLabel){
+    if (loadAuth == true){
+         return ListView(
           shrinkWrap: true,
           padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          children: <Widget>[
-           
-        
-                            
-                         
-            Image.asset(
+          children: <Widget>[                
+                                   Image.asset(
                 'resources/images/icon_auth.png', width: 350 ,height: 350,
               ),
             SizedBox(height: 48.0),
@@ -186,8 +190,9 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
             loginButton,
             forgotLabel
           ],
-        ),
-      ),
-    );
+        );
+    }else{
+        return  CircularProgressIndicator();
+    }
   }
 }

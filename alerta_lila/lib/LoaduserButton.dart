@@ -31,7 +31,7 @@ class _Button extends State<LoadUserButton> {
   String id = "";
   String admin = "";
   String emergency = "";
-  
+    StreamSubscription sub ;
  
 
   final _widgetOptions = [
@@ -57,7 +57,7 @@ class _Button extends State<LoadUserButton> {
     
     DocumentReference reference = Firestore.instance.collection('Usuarias').document(id);
     
-    reference.snapshots().listen((querySnapshot) {
+    sub  =  reference.snapshots().listen((querySnapshot) {
       
         // Do something with change
         print("this was changed, " );
@@ -72,18 +72,27 @@ class _Button extends State<LoadUserButton> {
         
         if(admin=="true"){
          _setAdmin(admin);
-            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> ActiveList()));
-          
+        _navigateActive(context);
        }
        else{
         
-             
-                Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context)=> UserButtonEmergency()));
+                _navigateButton(context);
+                
               
             }//que vaya a una de carga standard
           
        
     });
+}
+_navigateButton(context){
+
+  sub.cancel();
+  Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context)=> UserButtonEmergency()));
+}
+_navigateActive(context){
+  sub.cancel();
+   Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> ActiveList()));
+          
 }
 _setAdmin(String state)async{
   SharedPreferences prefs = await SharedPreferences.getInstance();

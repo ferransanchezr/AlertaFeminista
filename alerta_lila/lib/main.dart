@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -7,7 +9,7 @@ import 'localization.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
 import 'package:permission/permission.dart';
-
+import 'package:flutter_crashlytics/flutter_crashlytics.dart';
 
 import 'database.dart';
 
@@ -63,7 +65,7 @@ void initState(){
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.purple,
       ),
       home: MyHomePage(title:'' ),
     );
@@ -106,6 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
      firebaseMessaging.getToken().then((token){
         _update(token);
       });
+      _crash();
    
 
     
@@ -123,6 +126,31 @@ class _MyHomePageState extends State<MyHomePage> {
 
     
   }
+  _crash() async{
+    bool isInDebugMode = false;
+
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (isInDebugMode) {
+      // In development mode simply print to console.
+      FlutterError.dumpErrorToConsole(details);
+    } else {
+      // In production mode report to the application zone to report to
+      // Crashlytics.
+      Zone.current.handleUncaughtError(details.exception, details.stack);
+    }
+  };
+
+  await FlutterCrashlytics().initialize();
+
+  runZoned<Future<Null>>(() async {
+    runApp(MyApp());
+  }, onError: (error, stackTrace) async {
+    // Whenever an error occurs, call the `reportCrash` function. This will send
+    // Dart errors to our dev console or Crashlytics depending on the environment.
+    await FlutterCrashlytics().reportCrash(error, stackTrace, forceCrash: false);
+  });
+  }
+ 
     /*Widget: Carga
     Descripción: Este widget muestra un spinner de carga*/ 
   @override
@@ -141,7 +169,7 @@ class _MyHomePageState extends State<MyHomePage> {
         title: Text(DemoLocalizations.of(context).trans('title')),
         backgroundColor: Colors.purpleAccent,
       ),
-    body: new Text("Carregant Dades")
+    body:  new Center(child: CircularProgressIndicator(), )
   );
     
   }

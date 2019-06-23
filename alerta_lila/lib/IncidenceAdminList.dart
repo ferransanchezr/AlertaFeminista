@@ -54,7 +54,7 @@ void initState(){
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.purple,
       ),
       home: MyHomePage(title:'' ),
     );
@@ -124,7 +124,7 @@ class IncidenceList extends State<MyHomePage> {
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").snapshots() ,
                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                  if (!snapshot.hasData) return new Text('Loading...');
+                  if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
                   return new ListView(
                     padding: EdgeInsets.all(8.0),
                     

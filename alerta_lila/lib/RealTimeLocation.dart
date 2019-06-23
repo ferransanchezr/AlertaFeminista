@@ -53,6 +53,7 @@ class FireMapState extends State<FireMap> {
   List<Polyline> polygons = <Polyline>[];
   MarkerId markerId = new MarkerId("prueba");
   PolylineId polylineId = new PolylineId("polyline");
+  bool loadMap = false;
   
   var markerIcon;
   final Database _database = Database();
@@ -124,11 +125,20 @@ _syncState() async {
       
         // Do something with change
         print("this was changed, " + querySnapshot.data['open'] );
-        if(state!=querySnapshot.data['open'] ){
-          _setState(querySnapshot.data['open']);
-          Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
+        if((state=="false")&&(querySnapshot.data['open']=='true')){
+        //cambia para abrir
+        _setState(querySnapshot.data['open']);
+          
+        } else if((state=="true")&&(querySnapshot.data['open']=='true')){
+        //cambia para mantiene
+        print("noseasdjalk");
         }
-        
+        else if((state=="true")&&(querySnapshot.data['open']=='false')){
+        //cambia para cerrar
+        _setState(querySnapshot.data['open']);
+          Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
+
+        }
         // Do something with change
         //getUserLocation();
         //getAdminLocation();
@@ -136,14 +146,12 @@ _syncState() async {
         longitude_admin = double.parse(querySnapshot.data['longitude_admin']);
         latitude_user = double.parse(querySnapshot.data['latitude']);
         longitude_user = double.parse(querySnapshot.data['longitude']);
+        incidenceId = querySnapshot.data['unique_id'];
         nombreAdmin = querySnapshot.data['name_admin'];
        if(latitude_admin!=0.00 && longitude_admin!=0.00){
         setMarker();
         _setPolygons();
        }
-        
-        
-      
     });
 }
 _syncLocation() async {
@@ -163,6 +171,7 @@ _syncLocation() async {
     
     reference.snapshots().listen((querySnapshot) {
       
+      
     });
 }
   //Empezar Contador
@@ -179,6 +188,7 @@ _syncLocation() async {
         }
       );
   }
+ 
      //obtener el user
   getUserId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -259,12 +269,31 @@ _syncLocation() async {
       longitude_user = l.longitude;
       //Database.createMessage("Inici Sessió", "automatic");
     });
-    Database.setLocation(l.latitude, l.longitude, uid); 
+   // Database.setLocation(l.latitude, l.longitude, uid); 
+    Database.setIncidenceLocationUser(l.latitude,l.longitude,incidenceId);
+    
+   // getUserLocation(incidenceId);
+   
+    
+    }//end GetLocation
+      Future getFirstLocation() async{
+    var l = await location.getLocation();
+
+    //save location in database
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    var uid = prefs.get("user");
+    
+      incidenceId = prefs.get("incidenceId");
+      latitude_user = l.latitude;
+      longitude_user = l.longitude;
+      //Database.createMessage("Inici Sessió", "automatic");
+  
+    //Database.setLocation(l.latitude, l.longitude, uid); 
     Database.setIncidenceLocationUser(l.latitude,l.longitude,incidenceId);
     
    // getUserLocation(incidenceId);
     
-    }//end GetLocation
+    }//en
 
 //Obtener la localizacion desde la incidencia
 getUserLocation()  async { 

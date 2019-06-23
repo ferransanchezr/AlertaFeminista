@@ -20,8 +20,8 @@ exports.newSubscriberNotification = functions.firestore
                 }
                 var payload = {
                     "notification": {
-                        "title": "From " + msgData.name,
-                        "body": "Nova Incidencia - " + msgData.created,
+                        "title": "Nova Incidencia ",
+                        "body": msgData.name + " - " + msgData.created,
                         "sound": "default"
                     },
                     "data": {

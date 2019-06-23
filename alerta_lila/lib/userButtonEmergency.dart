@@ -28,6 +28,7 @@ class _Button extends State<UserButtonEmergency> {
   int _selectedIndex = 1;
   String id = "";
   Timer timer;
+  bool activeButton = false;
   
 
   final _widgetOptions = [
@@ -65,12 +66,12 @@ class _Button extends State<UserButtonEmergency> {
               width: 200.0,
               height: 200.0,
               child: new FloatingActionButton( 
-                backgroundColor: Colors.purple[300],
+                backgroundColor: _buttonColor(),
                 
                 child: Icon(Icons.add_alert,size:100.0),
                 
 
-                onPressed: _createIncident,
+                onPressed: ()=> _createIncident("false"),
               ),
             ),
       ),
@@ -92,6 +93,14 @@ class _Button extends State<UserButtonEmergency> {
       uid = prefs.getString("user");
       return uid ;
   }
+  _buttonColor(){
+    if(activeButton==true){
+      return Colors.purple[300];
+    }else{
+      return Colors.grey;
+    }
+    
+  }
   
 _getinidenceId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -112,6 +121,10 @@ _getState() async{
       timer = new Timer.periodic(
         refreshTime,(timer){
          _activeIncidence();
+         setState(() {
+           activeButton = true;
+         });
+         
           
         }
       );
@@ -149,11 +162,12 @@ _getState() async{
        emergency = emergency.toString();
       if(emergency=="true"){
          Database.emergencySwitch(false,id);
-        _createIncident();
+        _createIncident("true");
       }
               
  }
   void _onItemTapped(int index) {
+    
     setState(() {
       switch(index){
         case 0: {
@@ -173,8 +187,10 @@ _getState() async{
       }
       
     });
+    
   }
-   void _createIncident() async{
+   void _createIncident(String emergency) async{
+   if((activeButton==true)||(emergency == "true")){
     String id = await getUserId();
     var now = new DateTime.now();
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -182,9 +198,10 @@ _getState() async{
     String fecha = DateFormat('dd-MM-yyyy - kk:mm').format(now);
     String name = await  Database.getUserData(id);
     String phone = prefs.get("phone");
-    Database.createIncidence(id, fecha, name,phone);
+    await Database.createIncidence(id, fecha, name,phone);
+    timer.cancel();
     Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-
+   }
 
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
-import 'package:alerta_lila/UserList.dart';
+import 'package:alerta_lila/CreateUser.dart';
+import 'package:alerta_lila/EditUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -8,6 +9,7 @@ import 'dart:ui' as ui;
 import 'package:localstorage/localstorage.dart';
 import 'IncidenceActiveList.dart';
 import 'IncidenceAdminList.dart';
+import 'UserList.dart';
 import 'database.dart';  
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
@@ -50,6 +52,7 @@ class _MyHomePageState extends State<MyHomePage> {
   
   File _image;
   String user = "";
+  bool emergency;
   var userEmail = "";
   double _width = 50;
   double _height = 50;
@@ -64,12 +67,18 @@ class _MyHomePageState extends State<MyHomePage> {
     getEmail() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       userEmail = prefs.getString("email");
+       if(prefs.getString("emergencia") == "true"){
+         emergency = true;
+       }else{
+         emergency = false;
+       }
     }
      Future getUserDbData()  async {
       String user = await getUserId();
       String email = await Database.getUserData(user); 
       setState(() {
        profile.email = email; 
+       
       });
      
    }
@@ -115,10 +124,10 @@ class _MyHomePageState extends State<MyHomePage> {
     //loadImage();
 
   }
-  Widget _buildListItem(BuildContext context,DocumentSnapshot document){
+  Widget _buildListItem(DocumentSnapshot document){
      final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
-    bool emergency = false;
+    
   return new Stack(children: <Widget>[
       new Container(color: Color(0xffee98fb),),
       new Image.network( document['profile_path'], fit: BoxFit.fill,),
@@ -130,7 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: new Container(
       decoration: BoxDecoration(
       color:  Colors.purple[300].withOpacity(0.9),
-      borderRadius: BorderRadius.all(Radius.circular(50.0)),
+ 
       ),)),
       new Scaffold(
           appBar: new AppBar(
@@ -154,14 +163,53 @@ class _MyHomePageState extends State<MyHomePage> {
             child: new Column(
               children: <Widget>[
                 new SizedBox(height: _height/12,),
-                new CircleAvatar(radius:_width<_height? _width/4:_height/4,backgroundImage: NetworkImage(document['profile_path']), ),
+               
+                
+                new Stack(
+                  
+                  children: <Widget>[
+                 
+                new Container(
+                 
+                child: new CircleAvatar(radius:_width<_height? _width/4:_height/4,backgroundImage: NetworkImage(document['profile_path']) 
+               
+                  ), ),
+                new Positioned(
+                  left: _width/3.0, 
+                  top: _height/8.5,
+                  child:
+                    new FloatingActionButton(
+                    heroTag: "1",
+                  child: Icon(Icons.add_a_photo,color: Colors.white,),
+                  backgroundColor: Color(0xff883997),
+                  
+                  onPressed: getImage,
+                  ),
+                ),
+                  
+                 
+                  
+                  ]
+                
+                ),
+          
                 new SizedBox(height: _height/25.0,),
                 
                 new Text(document['name'], style: new TextStyle(fontWeight: FontWeight.bold, fontSize: _width/15, color: Colors.white),),
-                new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),
-                  
-                ),
-                new Text('Activa el Mode Usuaria',style: TextStyle(color: Colors.white),),
+                new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),),
+                new Padding(padding: new EdgeInsets.only(top: _height/500, left: _width/8, right: _width/8),),
+                new Icon(Icons.phone,size: 30.0,color:Colors.white), 
+             
+                 new Row(
+                   mainAxisAlignment: MainAxisAlignment.center,
+                   
+                   children: <Widget>[
+                       new  Text(" "+document['phone'], style: new TextStyle( fontSize: _width/15, color: Colors.white),)
+                   ],
+                 ),
+               
+                new Padding(padding: new EdgeInsets.only(top: _height/30, left: _width/8, right: _width/8),),
+                new Text('Activa el Mode Usuària',style: TextStyle(color: Colors.white),),
               Transform.scale(
                 scale: 1.25,
                 child:
@@ -169,12 +217,12 @@ class _MyHomePageState extends State<MyHomePage> {
                 value: emergency,
                 
                 onChanged: (value) {
-                  setState(() {
-                    emergency = value;
-                  });
+                 
+                  
+                
                 },
-                activeTrackColor: Color(0xffee98fb), 
-                activeColor: Colors.purple[300],
+                activeTrackColor: Colors.grey, 
+                activeColor: Colors.grey[300],
               ),
               ),
               
@@ -182,18 +230,21 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
           ),
           floatingActionButton: FloatingActionButton(
+          heroTag: "2",
         backgroundColor: Color(0xff883997),
-        onPressed: getImage,
+        onPressed: (){
+          Navigator.push(this.context,MaterialPageRoute(builder: (context) => EditUser()),);
+        },
         tooltip: 'Pick Image',
-        child: Icon(Icons.add_a_photo),
+        child: Icon(Icons.edit),
       ),
          bottomNavigationBar: BottomNavigationBar(
-                type: BottomNavigationBarType.fixed,
+                 type: BottomNavigationBarType.fixed,
                 items: <BottomNavigationBarItem>[
                   BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial')),
                   BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
-                  BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('Usuàries')),
+                  BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('Usuaries')),
                 ],
                 currentIndex: 2,
                 fixedColor: Color(0xff883997),
@@ -210,9 +261,16 @@ class _MyHomePageState extends State<MyHomePage> {
     return StreamBuilder(stream:  Firestore.instance.collection('Usuarias').where("email",isEqualTo: userEmail).snapshots() ,
     builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
       if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
-      return AnimatedOpacity(duration: Duration(seconds:1),
-      opacity: true ? 1.0 : 0.0,
-      child: _buildListItem(context,snapshot.data.documents[0]));
+        if(snapshot.data.documents.isNotEmpty){
+                         return AnimatedOpacity(duration: Duration(seconds:1),
+                              opacity: true ? 1.0 : 0.0,
+                              child: _buildListItem(snapshot.data.documents[0]));
+
+                    } else{
+                        return new Center(child: CircularProgressIndicator());                  
+                    }
+                        
+   
        
       
                       
@@ -238,10 +296,10 @@ void _onItemTapped(int index) {
       
         }
         break;
-        case 3: {
+         case 3: {
           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserList()),);
         }
-        break;
+         
       }
       
     });

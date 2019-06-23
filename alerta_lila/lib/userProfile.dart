@@ -137,7 +137,7 @@ class _MyHomePageState extends State<MyHomePage> {
       child: new Container(
       decoration: BoxDecoration(
       color:  Colors.purple[300].withOpacity(0.9),
-      borderRadius: BorderRadius.all(Radius.circular(50.0)),
+      
       ),)),
       new Scaffold(
           appBar: new AppBar(

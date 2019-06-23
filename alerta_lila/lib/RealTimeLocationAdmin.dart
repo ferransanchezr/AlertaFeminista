@@ -65,7 +65,8 @@ class FireMapState extends State<FireMap> {
   var markerIcon;
   final Database _database = Database();
   final myController = TextEditingController();
-  
+  StreamSubscription<QuerySnapshot> sub;
+  bool loadData = false;
         
 
   @override   
@@ -123,13 +124,21 @@ _syncState() async {
       
         // Do something with change
         print("this was changed, " + querySnapshot.data['open'] );
-        if(state!="null"){
-        if(state!=querySnapshot.data['open'] ){
-          _setState(querySnapshot.data['open']);
-          Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
-          }
+         if((state=="false")&&(querySnapshot.data['open']=='true')){
+        //cambia para abrir
+        _setState(querySnapshot.data['open']);
+          
+        } else if((state=="true")&&(querySnapshot.data['open']=='true')){
+        //cambia para mantiene
+        print("noseasdjalk");
         }
-        
+        else if((state=="true")&&(querySnapshot.data['open']=='false')){
+        //cambia para cerrar
+        _setState(querySnapshot.data['open']);
+          
+          Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
+
+        }
         // Do something with change
         //getUserLocation();
         //getAdminLocation();
@@ -141,6 +150,7 @@ _syncState() async {
         nombreAdmin = querySnapshot.data['name_admin'];
         _setState(querySnapshot.data['open']);
        if(latitude_admin!=0.00 && longitude_admin!=0.00){
+        loadData = true;
         setMarker();
         _setPolygons();
        }
@@ -226,7 +236,28 @@ _syncState() async {
                     );
   }
   
-
+_floatChatButton(){
+  if (loadData==true){
+      return FloatingActionButton(
+        child: Icon(Icons.chat),
+        backgroundColor: Color(0xff883997),
+        foregroundColor: Colors.white,
+        onPressed: (){
+          Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);
+        },
+      );
+  }else{
+    return  new Column(
+  crossAxisAlignment: CrossAxisAlignment.center,
+  mainAxisSize: MainAxisSize.max,
+  mainAxisAlignment: MainAxisAlignment.end,
+  children: <Widget>[
+      //your elements here
+      new CircularProgressIndicator()
+  ],
+    );
+  }
+}
   //Obtener la fecha de la incidencia
   getIncidenceDate(){
    Database.getIncidenceDate();
@@ -337,14 +368,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
    // getCounter();
    return Scaffold(
      floatingActionButton:
-      FloatingActionButton(
-        child: Icon(Icons.chat),
-        backgroundColor: Color(0xff883997),
-        foregroundColor: Colors.white,
-        onPressed: (){
-          Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);
-        },
-      ),
+     _floatChatButton(),
         appBar: AppBar(
           title: Text("Incidencia"),
           
