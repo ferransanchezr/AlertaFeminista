@@ -2,16 +2,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/services.dart';
-import 'package:google_sign_in/google_sign_in.dart';
-import 'package:transparent_image/transparent_image.dart';
 import 'database.dart';
-import 'userProfile.dart';
-import 'RealTimeLocation.dart';
-import 'package:localstorage/localstorage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import 'LoaduserButton.dart';
-import 'IncidenceActiveList.dart';
+
 
 class LoginPage extends StatefulWidget {
   static String tag = 'login-page';
@@ -24,7 +18,6 @@ class _LoginPageState extends State<LoginPage> {
 
     TextEditingController emailController = new TextEditingController();
     TextEditingController passController = new TextEditingController();
-    final GoogleSignIn _googleSignIn = GoogleSignIn();
     final FirebaseAuth auth = FirebaseAuth.instance;
     SharedPreferences prefs;
     String errorCode = "";
@@ -36,70 +29,69 @@ class _LoginPageState extends State<LoginPage> {
     }
 
 /* Function: HandleSignIn
-   Descripcion: inicio de session a través de firebase*/   
+  Descripcion: inicio de session a través de firebase*/   
 Future<FirebaseUser> _handleSignIn(String email, String password) async {
     final FirebaseUser currentUser = await auth.currentUser();
     FirebaseUser user ;
+    
     if(currentUser!=null){
          user = currentUser;
     }else{
      user = await auth.signInWithEmailAndPassword(email: email, password: password).catchError((onError){
+      
         setState(() {
          errorCode =  "Error e-mail o password no valids";
+      
         });
-         
-        
      });
     }
     assert(user != null);
     assert(await user.getIdToken() != null);
-    print('signInEmail succeeded: $user');
-    
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("user",user.uid);
     prefs.setString("email",user.email);
     DocumentReference reference = Firestore.instance.collection('Usuarias').document(user.uid);
-    
     reference.snapshots().listen((querySnapshot) {
        prefs.setString("userName", querySnapshot.data['name']);
        prefs.setString("phone", querySnapshot.data['phone']);
        prefs.setString("admin",querySnapshot.data['admin']);
        prefs.setString("emergencia",querySnapshot.data['modeEmergencia']);
     });
-
     var token = prefs.get("token");
     Database.updateToken(user.uid, token);
-    //Database.createUser(user.email, user.uid,context,token);
-     Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoadUserButton()) );
-     return user;
+    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> LoadUserButton()) );
+    return user;
 }
-    _getPrefs()async{
-      prefs = await SharedPreferences.getInstance(); 
-    }
-    //log In if User Exists
-    _autoLogIn() {
-      _getPrefs().then((p){
-        
-      if(prefs.getString("user")!=null){
-        //existe un Usuario logged  
-        _handleSignIn("", "");
-        }else{
-          setState(() {
-            loadAuth = true;  
-          });
-          
-        }
+
+/*Nombre: _getPrefs()
+  Función: Obtiene las preferencias guardadas en el dispositivo*/
+_getPrefs()async{
+  prefs = await SharedPreferences.getInstance(); 
+}
+
+/*Nombre: _autoLogin
+  Función: si hay datos de usuario, automaticamente ejecuta el Log In*/ 
+_autoLogIn() {
+  _getPrefs().then((p){
+  if(prefs.getString("user")!=null){ 
+    _handleSignIn("", "");
+    }else{
+        setState(() {
+          loadAuth = true;  
         });
-   }
+    }
+  });
+}
+
+ /*Widget: build()
+  Descripción: Widget principal del la pantalla de inicio de sesión*/
   @override
   Widget build(BuildContext context) {
-     ///
-  /// Force the layout to Portrait mode
-  /// 
      SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown
     ]);
+
     final email = TextFormField(
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
@@ -117,7 +109,6 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
       ),
     );
 
- 
     final password = TextFormField(
       controller: passController,
       
@@ -135,7 +126,9 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
         
       ),
     );
+
     final errorLabel = Text(errorCode,style: TextStyle(fontWeight: FontWeight.bold,color:Colors.red),);
+   
     final loginButton = Padding(
       padding: EdgeInsets.symmetric(vertical: 16.0),
       child: RaisedButton(
@@ -172,27 +165,30 @@ Future<FirebaseUser> _handleSignIn(String email, String password) async {
       ),
     );
   }
-  _loginView(email, password, errorLabel,loginButton,forgotLabel){
-    if (loadAuth == true){
-         return ListView(
-          shrinkWrap: true,
-          padding: EdgeInsets.only(left: 24.0, right: 24.0),
-          children: <Widget>[                
-                                   Image.asset(
-                'resources/images/icon_auth.png', width: 350 ,height: 350,
-              ),
-            SizedBox(height: 48.0),
-            email,
-            SizedBox(height: 8.0),
-            password,
-            SizedBox(height: 24.0),
-            errorLabel,
-            loginButton,
-            forgotLabel
-          ],
-        );
-    }else{
-        return  CircularProgressIndicator();
-    }
+
+/*Nombre: _loginView
+  Función: muestra un circulo da carga mientras ejecuta _handleSignIn()*/ 
+_loginView(email, password, errorLabel,loginButton,forgotLabel){
+  if (loadAuth == true){
+        return ListView(
+        shrinkWrap: true,
+        padding: EdgeInsets.only(left: 24.0, right: 24.0),
+        children: <Widget>[                
+                                  Image.asset(
+              'resources/images/icon_auth.png', width: 350 ,height: 350,
+            ),
+          SizedBox(height: 48.0),
+          email,
+          SizedBox(height: 8.0),
+          password,
+          SizedBox(height: 24.0),
+          errorLabel,
+          loginButton,
+          forgotLabel
+        ],
+      );
+  }else{
+      return  CircularProgressIndicator();
   }
+}
 }

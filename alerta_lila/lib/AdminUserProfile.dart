@@ -240,6 +240,10 @@ class _MyHomePageState extends State<MyHomePage> {
     
    
   }
+
+ 
+/*Nombre: _onItemTapped
+Función: navegación de la botonera principal*/ 
 void _onItemTapped(int index) {
     selectedIndex = index;
     setState(() {

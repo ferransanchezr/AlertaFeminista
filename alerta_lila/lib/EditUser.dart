@@ -6,6 +6,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'AdminUserProfile.dart';
 import 'UserList.dart';
 import 'database.dart';
 
@@ -150,18 +151,18 @@ Widget  _buildListItem(BuildContext context,DocumentSnapshot document){
                 if (!_name.currentState.validate()) {
                   // If the form is valid, display a Snackbar.
                   Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text('Processant les dades')));
+                      .showSnackBar(SnackBar(content: Text('Error al Processar les dades')));
                 }
                  
                 else  if (!_phone.currentState.validate()) {
                   // If the form is valid, display a Snackbar.
                   Scaffold.of(context)
-                      .showSnackBar(SnackBar(content: Text('Processant les dades')));
+                      .showSnackBar(SnackBar(content: Text('Error al Processar les dades')));
                 }
                 else {
                   Scaffold.of(context)
                       .showSnackBar(SnackBar(content: Text('Processant Credencials...')));
-                    _signUp(phoneController.text,nameController.text,document.documentID);
+                    _signUp(phoneController.text,nameController.text,document.documentID,document.data['admin']);
                 }
                 
 
@@ -239,9 +240,13 @@ Widget  _buildListItem(BuildContext context,DocumentSnapshot document){
   
   
   */ 
-  _signUp(String phone, String name,String uid) async{
+  _signUp(String phone, String name,String uid,String admin) async{
     Database.updatetUser( uid, phone, name);
-    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserProfile()));
+    if(admin == "true"){
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserProfile()));
+    }else{
+      Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> AdminUserProfile()));
+    }
   }
   _passEmail(String email)async{
     FirebaseAuth _firebaseAuth = FirebaseAuth.instance;

@@ -112,6 +112,41 @@ class _MyHomePageState extends State<MyHomePage> {
     var permissions = await Permission.getPermissionsStatus([PermissionName.Internet, PermissionName.Location]);
 
     var permissionNames = await Permission.requestPermissions([PermissionName.Internet, PermissionName.Location]);  
+    /*
+    fetchCurrentLocation() async {
+    await _locationService.changeSettings(
+        accuracy: locationPackage.LocationAccuracy.HIGH, interval: 1000);
+
+    locationPackage.LocationData location;
+    // Platform messages may fail, so we use a try/catch PlatformException.
+    try {
+      bool serviceStatus = await _locationService.serviceEnabled();
+      print("Service status: $serviceStatus");
+      if (serviceStatus) {
+        _permission = await _locationService.requestPermission();
+        print("Permission: $_permission");
+        if (_permission) {
+          location = await _locationService.getLocation();
+
+          print("Location: ${location.latitude}");
+        }
+      } else {
+        bool serviceStatusResult = await _locationService.requestService();
+        print("Service status activated after request: $serviceStatusResult");
+        if (serviceStatusResult) {
+          fetchCurrentLocation();
+        }
+      }
+    } on PlatformException catch (e) {
+      print(e);
+      if (e.code == 'PERMISSION_DENIED') {
+        //error = e.message;
+      } else if (e.code == 'SERVICE_STATUS_ERROR') {
+        //error = e.message;
+      }
+      location = null;
+    }
+  }*/ 
   }
 
   /*Nombre: _crash()
