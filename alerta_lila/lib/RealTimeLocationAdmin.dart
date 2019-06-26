@@ -139,9 +139,7 @@ _syncState() async {
           Navigator.pushReplacement(this.context,MaterialPageRoute(builder: (context) => LoginPage()),);
 
         }
-        // Do something with change
-        //getUserLocation();
-        //getAdminLocation();
+
         latitude_admin = double.parse(querySnapshot.data['latitude_admin']);
         longitude_admin = double.parse(querySnapshot.data['longitude_admin']);
         latitude_user = double.parse(querySnapshot.data['latitude']);
@@ -285,10 +283,7 @@ getUserLocation()  async {
  await  Database.getIncidenceLocationAdmin();  
 }
     
-//Obtener la localizacion del admin desde la incidencia
-  Future getAdminLocation()  async {
-    await Database.getLocationData(); 
-  }
+
  
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
          return Stack(

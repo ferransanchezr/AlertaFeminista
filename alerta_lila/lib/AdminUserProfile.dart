@@ -64,13 +64,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Función: Obtiene el email de la usuaria autenticada*/
   getEmail() async{
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    userEmail = prefs.getString("email");
+    setState(() {
+      userEmail = prefs.getString("email");
+    });
+    
     if(prefs.getString("emergencia") == "true"){
       emergency = true;
     }else{
       emergency = false;
     }
   }
+  
 
   /*Nombre: _signOut()
   Función: Cierra la session de la usuaria y redirigue hacia la pantalla de carga*/
@@ -98,6 +102,7 @@ class _MyHomePageState extends State<MyHomePage> {
   initState() {
     super.initState();
     getEmail();
+    
   }
 
   /*Nombre: _buildListItem()
@@ -226,19 +231,11 @@ class _MyHomePageState extends State<MyHomePage> {
                          return AnimatedOpacity(duration: Duration(seconds:1),
                               opacity: true ? 1.0 : 0.0,
                               child: _buildListItem(snapshot.data.documents[0]));
-
                     } else{
                         return new Center(child: CircularProgressIndicator());                  
                     }
-                        
-   
-       
-      
-                      
     }
     );
-    
-   
   }
 
  

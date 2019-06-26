@@ -91,8 +91,6 @@ _buildAppBar(BuildContext context,DocumentSnapshot document){
     actions:  <Widget>[
       IconButton(icon:Icon(Icons.phone),color: Colors.white,iconSize: 30.0,
       onPressed:()=>launch("tel://"+ document['phone'] )
-        //log(document['phone']);
-      
       ),
     ]
   );

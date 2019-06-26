@@ -46,7 +46,7 @@ dependencies:
   flutter_launcher_icons: ^0.7.2
   permission: ^0.1.2
   flutter_crashlytics: ^1.0.0
-  
+  mockito: ^4.1.0
   
   image: ^2.1.4
   

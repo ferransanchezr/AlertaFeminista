@@ -22,6 +22,10 @@ class _LoginPageState extends State<LoginPage> {
     SharedPreferences prefs;
     String errorCode = "";
     bool loadAuth = false;
+    final _email = GlobalKey<FormState>();
+    final _pass = GlobalKey<FormState>();
+    final  validCharacters = RegExp(r'^[a-zA-Z0-9@.]+$');
+    final  validNumberCharacters = RegExp(r'^[0-9]+$');
 
     @override 
     initState() {
@@ -92,14 +96,24 @@ _autoLogIn() {
       DeviceOrientation.portraitDown
     ]);
 
-    final email = TextFormField(
+    final email = 
+    new Form(
+    key: _email,
+    child: Column(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: <Widget>[
+    TextFormField(
+      
       controller: emailController,
       keyboardType: TextInputType.emailAddress,
       autofocus: false,
       validator: (value) {
-      if (value.isEmpty) {
-      return 'Introdueix un E-mail o Password valids';
-        }
+
+         if((value.isEmpty==true) || (value.length >=30) || (_emailValidator(value)==false)){
+            return 'Introdueix un E-mail o Password valids';
+          } 
+          return null;
+        
       },
       decoration: InputDecoration(
         hintText: 'Email',
@@ -107,23 +121,36 @@ _autoLogIn() {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
         
       ),
+    ),]
+    ),
     );
 
-    final password = TextFormField(
-      controller: passController,
+
+    final password =  
+    new Form(
+      key: _pass,
+      child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        TextFormField(
+        controller: passController,
+        
+        autofocus: false,
+        validator: (value) {
       
-      autofocus: false,
-      validator: (value) {
-      if (value.isEmpty) {
-      return 'Introdueix un E-mail o Password valids';
-        }
+          if((value.isEmpty) || (validCharacters.hasMatch(value)==false) || (value.length>=15)){
+            return 'Introdueix un E-mail o Password valids';
+          }
+          return null;
       },
       obscureText: true,
       decoration: InputDecoration(
-        hintText: 'Password',
-        contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)),
-        
+      hintText: 'Password',
+      contentPadding: EdgeInsets.fromLTRB(20.0, 10.0, 20.0, 10.0),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(32.0)), 
+      ),
+      
+        ),]
       ),
     );
 
@@ -136,10 +163,18 @@ _autoLogIn() {
           borderRadius: BorderRadius.circular(24),
         ),
         onPressed: () {
-         
-              _handleSignIn(emailController.text,passController.text)
-          .then((FirebaseUser user) => print(user))
-          .catchError((e) => print(e));
+          if (!_email.currentState.validate()) {
+              errorCode= 'Error al processar les dades';
+          }
+          else if (!_pass.currentState.validate()) {
+              errorCode= 'Error al processar les dades';
+          }
+          else  {
+
+            _handleSignIn(emailController.text,passController.text)
+            .then((FirebaseUser user) => print(user))
+            .catchError((e) => print(e));
+          }  
          
         },
         padding: EdgeInsets.all(12),
@@ -165,6 +200,23 @@ _autoLogIn() {
       ),
     );
   }
+
+/*Funcion: _emailValidator()
+Descripción: devuelve true si el string pasado es un email*/
+bool _emailValidator(String value){ 
+  if (value.isEmpty == true){
+    return false;
+  } else{
+    String p = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+    RegExp regExp = new RegExp(p);
+    if(regExp.hasMatch(value)){
+      return true;
+    }
+    else{
+      return false;
+    }
+  }
+}
 
 /*Nombre: _loginView
   Función: muestra un circulo da carga mientras ejecuta _handleSignIn()*/ 
