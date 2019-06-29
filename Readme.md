@@ -31,15 +31,9 @@ Exemple:
 
 He utilitzat la guia d'estil de [Flutter] que podeu trobar al següent link -[Guia d'estil](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2#file-readme-template-md)
 
-```
-Give an example
-```
 
-## Deployment
 
-Add additional notes about how to deploy this on a live system
-
-## Built With
+## Contruit a partir de
 
 * [Flutter](https://flutter.dev/?gclid=CjwKCAjwmNzoBRBOEiwAr2V27RcZ-joc6BvDR-TQ7UgWesDyuBOdQCvkrM4CrHclxWcBEM5TKBKrwRoCH-0QAvD_BwE) - El Framework utilitzat
 * [Firebase](https://firebase.google.com/?gclid=CjwKCAjwmNzoBRBOEiwAr2V27Y-RTXC0AAQN78_wSGmkmDxTokNxwnjtApwf3LEh7RBLywlxgmXpUhoCDScQAvD_BwE) - El Back End 
@@ -47,7 +41,7 @@ Add additional notes about how to deploy this on a live system
 
 ## Autors
 
-* **Ferran Sánchez** - *Initial work* - [Ferran Sánchez](https://github.com/ferransanchezr)
+* **Ferran Sánchez** - *Treball Inicial* - [Ferran Sánchez](https://github.com/ferransanchezr)
 
 
 
