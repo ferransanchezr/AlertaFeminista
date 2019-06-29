@@ -208,9 +208,9 @@ Descripcion: Actualiza los datos de la usuaria*/
 _updateData(String phone, String name,String uid,String admin) async{
   Database.updatetUser( uid, phone, name);
   if(admin == "true"){
-    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserProfile()));
-  }else{
     Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> AdminUserProfile()));
+  }else{
+    Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserProfile()));
   }
 }
 
