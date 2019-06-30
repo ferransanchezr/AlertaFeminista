@@ -1,15 +1,10 @@
 import 'dart:async';
-
 import 'package:alerta_lila/userButton.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threading/threading.dart';
-import 'localizationDelegate.dart';
 import 'IncidenceList.dart';
-import 'authUser.dart';
 import 'Database.dart';
 import 'RealTimeLocation.dart';
 import 'userProfile.dart';
@@ -30,21 +25,13 @@ class _Button extends State<UserButtonEmergency> {
   Timer timer;
   bool activeButton = false;
   
-
-  final _widgetOptions = [
-    Text('Index 0: Home'),
-     Text('Index 1: School'),
-    Text('Index 2: School'),
-  ];
    @override
   initState() {
     super.initState();
-    getUserId();
+    _getUserId();
    _activeEmergencia();
-
-  
      var thread = new Thread(() async{
-          startTimer();
+        _startTimer();
     });
    thread.start();
     
@@ -54,8 +41,7 @@ class _Button extends State<UserButtonEmergency> {
  
   @override
   Widget build(BuildContext context) {
-    
-     
+
     return Scaffold(
       appBar: AppBar(
         title: Text('Botó alerta'),
@@ -67,10 +53,7 @@ class _Button extends State<UserButtonEmergency> {
               height: 200.0,
               child: new FloatingActionButton( 
                 backgroundColor: _buttonColor(),
-                
                 child: Icon(Icons.add_alert,size:100.0),
-                
-
                 onPressed: ()=> _createIncident("false"),
               ),
             ),
@@ -87,48 +70,62 @@ class _Button extends State<UserButtonEmergency> {
       ),
     );
   }
-  getUserId() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      String uid = "";
-      uid = prefs.getString("user");
-      return uid ;
-  }
-  _buttonColor(){
-    if(activeButton==true){
-      return Colors.purple[300];
-    }else{
-      return Colors.grey;
-    }
-    
+
+/*Función: _getUserId()
+Descripcion: Obtener el id del user*/
+_getUserId() async{
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String uid = "";
+    uid = prefs.getString("user");
+    return uid ;
+}
+/*Función: _buttonColor()
+Descripcion: Cambiar el color del botón*/
+_buttonColor(){
+  if(activeButton==true){
+    return Colors.purple[300];
+  }else{
+    return Colors.grey;
   }
   
+}
+
+/*Función: _getIncidenceId()
+Descripcion: Obtener el id de la incidencia*/  
 _getinidenceId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.get("incidenceId");
 }
+
+/*Función: _getState()
+Descripcion: Obterner el estado de la incidencia*/
 _getState() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.get("state");
 }
 
  
-   //Empezar Contador
-  startTimer() async{
-      if (timer!=null){
-        timer.cancel();
+/*Función: _startTimer()
+Descripcion: Iniciar el Timer*/
+_startTimer() async{
+    if (timer!=null){
+      timer.cancel();
+    }
+    const refreshTime = const Duration(seconds: 2);
+    timer = new Timer.periodic(
+      refreshTime,(timer){
+        _activeIncidence();
+        setState(() {
+          activeButton = true;
+        });
+        
+        
       }
-      const refreshTime = const Duration(seconds: 2);
-      timer = new Timer.periodic(
-        refreshTime,(timer){
-         _activeIncidence();
-         setState(() {
-           activeButton = true;
-         });
-         
-          
-        }
-      );
-  }
+    );
+}
+
+/*Función: _activeIncidence()
+Descripcion: comprobar si la incidencia esta activa*/
  Future<Null>  _activeIncidence() async{
    
      await Database.getIncidenceState();
@@ -141,57 +138,65 @@ _getState() async{
         timer.cancel();
         var route = ModalRoute.of(context);
 
-      if(route!=null){
-        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-      }
-      else{
-          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));
-      }
+        if(route!=null){
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
+        }
+        else{
+            Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> UserButton()));
+        }
       }
      }
  }
+ /*Función: _getEmergency()
+Descripcion: Obtener el estado de la emergencia*/
   _getEmergency() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       String emergencia = "";
       emergencia = prefs.getString("emergencia");
       return emergencia ;
   }
+
+/*Función: _activeEmergencia()
+Descripcion: Crea Incidencia si el Modo de Emergencia = ON*/
  Future<Null>  _activeEmergencia() async{
-       var emergency = await _getEmergency();
-       var id = await getUserId();
-       emergency = emergency.toString();
-      if(emergency=="true"){
-         Database.emergencySwitch(false,id);
-        _createIncident("true");
-      }
-              
+    var emergency = await _getEmergency();
+    var id = await _getUserId();
+    emergency = emergency.toString();
+    if(emergency=="true"){
+      Database.emergencySwitch(false,id);
+      _createIncident("true");
+    }              
  }
-  void _onItemTapped(int index) {
-    
-    setState(() {
-      switch(index){
-        case 0: {
-           timer.cancel();
-           Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => List()),);
-        }
-        break;
-        case 1: {
-        
-        }
-        break;
-        case 2: {
+
+ /*Función: _onItemTapped()
+Descripcion: Menu Bar*/
+void _onItemTapped(int index) {
+  setState(() {
+    switch(index){
+      case 0: {
           timer.cancel();
-          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserProfile()),);
-        }
-        break;
+          Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => List()),);
       }
+      break;
+      case 1: {
       
-    });
+      }
+      break;
+      case 2: {
+        timer.cancel();
+        Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => UserProfile()),);
+      }
+      break;
+    }
     
-  }
-   void _createIncident(String emergency) async{
-   if((activeButton==true)||(emergency == "true")){
-    String id = await getUserId();
+  });
+}
+
+/*Función: _createIncident()
+Descripcion: Crear una incidencia*/
+  void _createIncident(String emergency) async{
+    if((activeButton==true)||(emergency == "true")){
+    String id = await _getUserId();
     var now = new DateTime.now();
     SharedPreferences prefs = await SharedPreferences.getInstance();
     prefs.setString("incidence_data", now.toString());
@@ -201,7 +206,6 @@ _getState() async{
     await Database.createIncidence(id, fecha, name,phone);
     timer.cancel();
     Navigator.pushReplacement(context,MaterialPageRoute(builder: (context)=> RealTimeLocation()));
-   }
-
+    }
   }
 }

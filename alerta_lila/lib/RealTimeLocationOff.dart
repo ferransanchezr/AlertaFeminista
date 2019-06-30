@@ -55,7 +55,7 @@ class FireMapState extends State<FireMap> {
   List<Polyline> polygons = <Polyline>[];
   PolylineId polylineId = new PolylineId("polyline");
   var markerIcon;
-  final Database _database = Database();
+
   
   @override   
   initState() {
@@ -63,6 +63,9 @@ class FireMapState extends State<FireMap> {
     _getinidenceId();
     _syncState();
   }//End init State
+
+  /*Función: _getIncidenceId()
+Descripcion: Obtiene el valor Id de las preferencias*/
 _getinidenceId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   setState(() {
@@ -70,12 +73,17 @@ _getinidenceId() async{
   }); 
   return prefs.get("incidenceId");
 }
+
+/*Función: _getState()
+Descripcion: Obtiene el valor del estado de las preferencias*/
 _getState() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.get("state");
 }
+
+/*Función: _setPolygons()
+Descripcion: Crea una línia que une a la Usuària con la Administradora*/
 _setPolygons(){
- 
   List<LatLng> polylinePoints = <LatLng>[
     new LatLng(latitude_admin, longitude_admin), new LatLng(latitude_user, longitude_user)
   ];
@@ -88,14 +96,10 @@ _setPolygons(){
   ];
 }
   
-     //obtener el user
-  getUserId() async{
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  var uid = prefs.getString("user");
-  return uid ;
-  }
-  //Crear el pin en googleMaps
-  setMarker(){
+
+ /*Función: _setMarker()
+  Descripcion: Crea un Pin donde en la localización de la administradora*/
+  _setMarker(){
      markers[markerId] = new Marker(
 
                       
@@ -123,14 +127,10 @@ _setPolygons(){
                       
                     );
   }
-
-  //Obtener la fecha de la incidencia
-  getIncidenceDate(){
-   Database.getIncidenceDate();
-  }
   
 
-//sincornizacion con la incidencia para conseguir todos los datos
+/*Función: _setMarker()
+  Descripcion: Crea un Pin donde en la localización de la administradora*/
 _syncState() async {
    var id = await _getinidenceId();
     id = id.toString();
@@ -145,11 +145,7 @@ _syncState() async {
       
         // Do something with change
         print("this was changed, " + querySnapshot.data['open'] );
-      
-        
-        // Do something with change
-        //getUserLocation();
-        //getAdminLocation();
+  
         latitude_admin = double.parse(querySnapshot.data['latitude_admin']);
         longitude_admin = double.parse(querySnapshot.data['longitude_admin']);
         latitude_user = double.parse(querySnapshot.data['latitude']);
@@ -157,88 +153,76 @@ _syncState() async {
         nombreAdmin = querySnapshot.data['name_admin'];
         nombreUser = querySnapshot.data['name'];
        if(latitude_admin!=0.00 && longitude_admin!=0.00){
-        setMarker();
+        _setMarker();
         _setPolygons();
-       }
-        
-        
-      
+       }  
     });
 }
-
- 
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
-         return Stack(
-            
-             children: [
-                   
-                                  
-                                   GoogleMap(
-                                  
-                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude_admin']) ,double.parse(document['longitude_admin'])), zoom: 15),
-                                    compassEnabled: false,
-                                    onMapCreated: _onMapCreated,
-                                    myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
-                                    mapType: MapType.normal, 
-                                    
-                                    markers:  Set<Marker>.of(markers.values),
-                                    polylines: Set<Polyline>.of(polygons),
-                                ),
-                                 new Container(
-                                   
-                                  child: new Center(
-                                    
-                                    child:new Column(
-                                   mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[ Card(
-                                    elevation: 8.0,
-                                    margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                                    child: Container(
-                                      decoration: BoxDecoration(color: Colors.white),
-                                      child: 
-                                      
-                                      
-                                      
-                                      ListTile(
+return Stack(
+  children: [
+GoogleMap(
+  initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude_admin']) ,double.parse(document['longitude_admin'])), zoom: 15),
+  compassEnabled: false,
+  onMapCreated: _onMapCreated,
+  myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
+  mapType: MapType.normal, 
+
+  markers:  Set<Marker>.of(markers.values),
+  polylines: Set<Polyline>.of(polygons),
+  ),
+new Container(
+    child: new Center(
+    child:new Column(
+    mainAxisAlignment: MainAxisAlignment.end,
+    children: <Widget>[ Card(
+    elevation: 8.0,
+    margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+    child: Container(
+      decoration: BoxDecoration(color: Colors.white),
+      child: 
+        ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
         leading: Container(
-          padding: EdgeInsets.only(right: 12.0),
-          decoration: new BoxDecoration(
-              border: new Border(
-                  right: new BorderSide(width: 1.0, color: Colors.black26))),
-          child: 
-          IconButton(icon: Icon(Icons.directions), color:  Colors.blue, iconSize: 40.0, onPressed:(){
-              
-              _launchMapsUrl(double.tryParse(document['latitude']), double.tryParse(document['longitude']));
+        padding: EdgeInsets.only(right: 12.0),
+        decoration: new BoxDecoration(
+        border: new Border(
+        right: new BorderSide(width: 1.0, color: Colors.black26))),
+        child: 
+        IconButton(icon: Icon(Icons.directions), color:  Colors.blue, iconSize: 40.0, onPressed:(){
 
-          }),
-          
+        _launchMapsUrl(double.tryParse(document['latitude']), double.tryParse(document['longitude']));
+
+        }),
+
         ),
         title: Text(
-          document['name'],
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        document['name'],
+        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
+// subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
 
-        subtitle: Row(
-          children: <Widget>[
-            Icon(Icons.query_builder, color: Colors.purple[300]),
-            Text('  '+document['created'], style: TextStyle(color: Colors.grey))
-          ],
-        ),
-        trailing:
-            Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 30.0)),
-                                      
-                                    ),
-                                    ),
-                                    ],
-                                  ),
-                                  ),
-                                ),
-              ], 
-              );
+subtitle: Row(
+children: <Widget>[
+Icon(Icons.query_builder, color: Colors.purple[300]),
+Text('  '+document['created'], style: TextStyle(color: Colors.grey))
+],
+),
+trailing:
+Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 30.0)),
+                        
+              ),
+              ),
+              ],
+            ),
+            ),
+          ),
+        ], 
+      );
 
 }
+/*Función: _launchMapUrl()
+  Descripcion: Abre Google Maps con las coordenadas de la administradora*/
 void _launchMapsUrl(double lat, double lon) async {
   final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
   if (await canLaunch(url)) {
@@ -247,11 +231,9 @@ void _launchMapsUrl(double lat, double lon) async {
     throw 'Could not launch $url';
   }
 }
-  //Generacion de la interface, UI
+
   @override
   Widget build(context) {
-   // getCounter();
-   
    return Scaffold(
      floatingActionButton:
       FloatingActionButton(
@@ -270,20 +252,12 @@ void _launchMapsUrl(double lat, double lon) async {
            ] 
         ),
         body: StreamBuilder(
-                stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
-                 builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
-                     
-                    if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
-                    
-                    
-                    return _buildListItem(context,snapshot.data.documents[0]);
-                      
-                    
-                 }),
-                    );
-
-        
-        
+          stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
+            builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
+              if (!snapshot.hasData) return new Center(child: CircularProgressIndicator(), ) ;
+              return _buildListItem(context,snapshot.data.documents[0]);
+            }),
+              );
   }
 final leftSection = new Container(
   
@@ -301,26 +275,19 @@ final duradaAtencio = new Container(
  
   child: new Text("00:00:00")
   );
-final telefon = new 
-   
-   IconButton(icon:Icon(Icons.phone),color: Color(0xff883997),iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
-  
-  final chat = 
- 
-   IconButton(icon:Icon(Icons.chat),color: Color(0xff883997),iconSize: 60.0,onPressed: (){ }
+final telefon = new IconButton(icon:Icon(Icons.phone),color: Color(0xff883997),iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
+final chat = IconButton(icon:Icon(Icons.chat),color: Color(0xff883997),iconSize: 60.0,
   );
+
+  /*Función: _onMapCreated()
+Descripcion: Actualizacion del mapa*/  
   void _onMapCreated(GoogleMapController controller) {
-    
     setState(() {
       mapController = controller;
       mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
         target : LatLng(latitude_user, longitude_user),zoom:15,
-        
-
       ))
-      
       );
-      
     });
   }
  

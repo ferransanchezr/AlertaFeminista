@@ -1,13 +1,9 @@
 import 'dart:io';
-
-import 'package:alerta_lila/CreateUser.dart';
 import 'package:alerta_lila/EditUser.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'dart:ui' as ui;
-import 'package:localstorage/localstorage.dart';
-import 'UserList.dart';
 import 'database.dart';  
 import 'dart:async';
 import 'package:flutter/cupertino.dart';
@@ -57,48 +53,49 @@ class _MyHomePageState extends State<MyHomePage> {
  int _selectedIndex = 1;
   String _imageUrl = "";
   Usuaria profile = Usuaria("","","","");
-   getUserId() async{
+
+/*Función: _getUserId()
+Descripcion: Obtener el Id de Usuaria*/
+   _getUserId() async{
       SharedPreferences prefs = await SharedPreferences.getInstance();
       var uid = prefs.getString("user");
       return uid ;
     }
-    getEmail() async{
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      userEmail = prefs.getString("email");
-       if(prefs.getString("emergencia") == "true"){
-         emergency = true;
-       }else{
-         emergency = false;
-       }
+
+/*Función: _getEmail()
+Descripcion: Obtener el email guardado en las preferencias*/
+_getEmail() async{
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  userEmail = prefs.getString("email");
+    if(prefs.getString("emergencia") == "true"){
+      emergency = true;
+    }else{
+      emergency = false;
     }
-     Future getUserDbData()  async {
-      String user = await getUserId();
-      String email = await Database.getUserData(user); 
-      setState(() {
-       profile.email = email; 
-       
-      });
-     
+}
+  /*Función: _getUserDbData()
+  Descripcion: Obtener datos de la base de datos*/
+  Future _getUserDbData()  async {
+    String user = await _getUserId();
+    String email = await Database.getUserData(user); 
+    setState(() {
+      profile.email = email; 
+    });
    }
-   Future loadImage() async {
-    String user = await getUserId();
-    String url =  await Database.downloadImage(user);
 
-    setState((){
-      profile.imageUrl = url;
-     
-   });
-   }
-   Future getImage() async {
+  /*Función: _getImage()
+Descripcion: Obtener la url de la imagen de perfil */
+Future _getImage() async {
+String id = await _getUserId();
+var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+_image = image;
+Database.uploadImage(_image,id);
+profile.imageUrl = await Database.downloadImage(id);
 
-    String id = await getUserId();
-    var image = await ImagePicker.pickImage(source: ImageSource.gallery);
+}
 
-      _image = image;
-      Database.uploadImage(_image,id);
-      profile.imageUrl = await Database.downloadImage(id);
-    
-  }
+/*Función: _signOut()
+Descripcion: Cerrar session de Usuario */
   _signOut() async{
     
      final FirebaseAuth auth = FirebaseAuth.instance;
@@ -110,18 +107,18 @@ class _MyHomePageState extends State<MyHomePage> {
         Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => MyApp()),);
         
      });
-     
   }
 
   @override
   initState() {
     super.initState();
     
-    getUserDbData();
-    getEmail();
-    //loadImage();
+    _getUserDbData();
+    _getEmail();
+
 
   }
+
   Widget _buildListItem(DocumentSnapshot document){
      final _width = MediaQuery.of(context).size.width;
     final _height = MediaQuery.of(context).size.height;
@@ -181,14 +178,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   child: Icon(Icons.add_a_photo,color: Colors.white,),
                   backgroundColor: Color(0xff883997),
                   
-                  onPressed: getImage,
+                  onPressed: _getImage,
                   ),
                 ),
-                  
-                 
-                  
                   ]
-                
                 ),
           
                 new SizedBox(height: _height/25.0,),
@@ -278,6 +271,9 @@ class _MyHomePageState extends State<MyHomePage> {
     
    
   }
+  
+  /*Función: _onItemTapper()
+Descripcion: navegación del menu */
 void _onItemTapped(int index) {
   _selectedIndex = index;
     setState(() {

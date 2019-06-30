@@ -6,7 +6,6 @@ import 'package:location/location.dart';
 import 'dart:async';
 import 'database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:threading/threading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
   
@@ -55,7 +54,6 @@ class FireMapState extends State<FireMap> {
   List<Polyline> polygons = <Polyline>[];
   PolylineId polylineId = new PolylineId("polyline");
   var markerIcon;
-  final Database _database = Database();
   
   @override   
   initState() {
@@ -63,6 +61,9 @@ class FireMapState extends State<FireMap> {
     _getinidenceId();
     _syncState();
   }//End init State
+
+  /*Función: _getIncidenceId()
+Descripcion: Obtiene el valor Id de las preferencias*/
 _getinidenceId() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   setState(() {
@@ -70,12 +71,17 @@ _getinidenceId() async{
   }); 
   return prefs.get("incidenceId");
 }
-_getState() async{
+
+/*Función: _getState()
+Descripcion: Obtiene el valor del estado de las preferencias*/
+ _getState() async{
   SharedPreferences prefs = await SharedPreferences.getInstance();
   return prefs.get("state");
 }
+
+/*Función: _setPolygons()
+Descripcion: Crea una línia que une a la Usuària con la Administradora*/
 _setPolygons(){
- 
   List<LatLng> polylinePoints = <LatLng>[
     new LatLng(latitude_admin, longitude_admin), new LatLng(latitude_user, longitude_user)
   ];
@@ -87,51 +93,31 @@ _setPolygons(){
     ),
   ];
 }
-  
-     //obtener el user
-  getUserId() async{
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  var uid = prefs.getString("user");
-  return uid ;
-  }
-  
-  //Crear el pin en googleMaps
-  setMarker(){
-     markers[markerId] = new Marker(
 
-                      
-                      markerId: markerId,
-                      
-                      position: LatLng(
-                        latitude_user,longitude_user
-                      ),
-                      infoWindow: InfoWindow(title: nombreUser, snippet: "posició de l'usuarià al tancar l'incidencia"),
-                      onTap: ()=>{},
-                     
-                      
-                    );
+/*Función: _setMarker()
+  Descripcion: Crea un Pin donde en la localización de la administradora*/
+_setMarker(){
+    markers[markerId] = new Marker( 
+                  markerId: markerId,
+                  position: LatLng(
+                    latitude_user,longitude_user
+                  ),
+                  infoWindow: InfoWindow(title: nombreUser, snippet: "posició de l'usuarià al tancar l'incidencia"),
+                  onTap: ()=>{},
+                  );
     markers[markerId2] =  new Marker(
+              markerId: markerId2,
+              position: LatLng(
+                latitude_admin,longitude_admin
+              ),
+              infoWindow: InfoWindow(title: nombreAdmin, snippet: "posició de la Administradora al tancar l'incidencia"),
+              onTap: ()=>{},
 
-                      
-                      markerId: markerId2,
-                      
-                      position: LatLng(
-                        latitude_admin,longitude_admin
-                      ),
-                      infoWindow: InfoWindow(title: nombreAdmin, snippet: "posició de la Administradora al tancar l'incidencia"),
-                      onTap: ()=>{},
-                     
-                      
-                    );
-  }
-
-  //Obtener la fecha de la incidencia
-  getIncidenceDate(){
-   Database.getIncidenceDate();
-  }
+            );
+    }
   
-
-//sincornizacion con la incidencia para conseguir todos los datos
+/*Función: _syncState()
+Descripcion: Sincronización con la base de datos*/
 _syncState() async {
    var id = await _getinidenceId();
     id = id.toString();
@@ -144,13 +130,8 @@ _syncState() async {
     
     reference.snapshots().listen((querySnapshot) {
       
-        // Do something with change
         print("this was changed, " + querySnapshot.data['open'] );
-      
-        
-        // Do something with change
-        //getUserLocation();
-        //getAdminLocation();
+ 
         latitude_admin = double.parse(querySnapshot.data['latitude_admin']);
         longitude_admin = double.parse(querySnapshot.data['longitude_admin']);
         latitude_user = double.parse(querySnapshot.data['latitude']);
@@ -158,7 +139,7 @@ _syncState() async {
         nombreAdmin = querySnapshot.data['name_admin'];
         nombreUser = querySnapshot.data['name'];
        if(latitude_admin!=0.00 && longitude_admin!=0.00){
-        setMarker();
+        _setMarker();
         _setPolygons();
        }
         
@@ -169,38 +150,30 @@ _syncState() async {
 
  
 Widget _buildListItem(BuildContext context,DocumentSnapshot document){
-         return Stack(
-            
-             children: [
-                   
-                                  
-                                   GoogleMap(
-                                  
-                                    initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude_admin']) ,double.parse(document['longitude_admin'])), zoom: 15),
-                                    compassEnabled: false,
-                                    onMapCreated: _onMapCreated,
-                                    myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
-                                    mapType: MapType.normal, 
-                                    
-                                    markers:  Set<Marker>.of(markers.values),
-                                    polylines: Set<Polyline>.of(polygons),
-                                ),
-                                 new Container(
-                                   
-                                  child: new Center(
-                                    
-                                    child:new Column(
-                                   mainAxisAlignment: MainAxisAlignment.end,
-                                    children: <Widget>[ Card(
-                                    elevation: 8.0,
-                                    margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
-                                    child: Container(
-                                      decoration: BoxDecoration(color: Colors.white),
-                                      child: 
-                                      
-                                      
-                                      
-                                      ListTile(
+  return Stack(          
+    children: [
+      GoogleMap(
+      initialCameraPosition: CameraPosition(target: LatLng( double.parse(document['latitude_admin']) ,double.parse(document['longitude_admin'])), zoom: 15),
+      compassEnabled: false,
+      onMapCreated: _onMapCreated,
+      myLocationEnabled: true, // Add little blue dot for device location, requires permission from user
+      mapType: MapType.normal, 
+      markers:  Set<Marker>.of(markers.values),
+      polylines: Set<Polyline>.of(polygons),
+  ),
+    new Container(
+      
+    child: new Center(
+      
+      child:new Column(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: <Widget>[ Card(
+      elevation: 8.0,
+      margin: new EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+      child: Container(
+        decoration: BoxDecoration(color: Colors.white),
+        child:                    
+        ListTile(
         contentPadding: EdgeInsets.symmetric(horizontal: 10.0, vertical: 15.0),
         leading: Container(
           padding: EdgeInsets.only(right: 12.0),
@@ -213,14 +186,11 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
               _launchMapsUrl(double.tryParse(document['latitude']), double.tryParse(document['longitude']));
 
           }),
-          
         ),
         title: Text(
           document['name'],
           style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
         ),
-        // subtitle: Text("Intermediate", style: TextStyle(color: Colors.white)),
-
         subtitle: Row(
           children: <Widget>[
             Icon(Icons.query_builder, color: Colors.purple[300]),
@@ -230,16 +200,19 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
         trailing:
             Icon(Icons.keyboard_arrow_right, color: Colors.white, size: 30.0)),
                                       
-                                    ),
-                                    ),
-                                    ],
-                                  ),
-                                  ),
-                                ),
-              ], 
-              );
+              ),
+              ),
+              ],
+            ),
+            ),
+          ),
+        ], 
+        );
 
 }
+
+/*Función: _launchMapUrl()
+  Descripcion: Abre Google Maps con las coordenadas de la administradora*/
 void _launchMapsUrl(double lat, double lon) async {
   final url = 'https://www.google.com/maps/search/?api=1&query=$lat,$lon';
   if (await canLaunch(url)) {
@@ -248,10 +221,10 @@ void _launchMapsUrl(double lat, double lon) async {
     throw 'Could not launch $url';
   }
 }
-  //Generacion de la interface, UI
+
+
   @override
   Widget build(context) {
-   // getCounter();
    return Scaffold(
      floatingActionButton:
       FloatingActionButton(
@@ -288,13 +261,10 @@ void _launchMapsUrl(double lat, double lon) async {
                     
                     
                     return _buildListItem(context,snapshot.data.documents[0]);
-                      
                     
                  }),
                     );
-
-        
-        
+   
   }
 final leftSection = new Container(
   
@@ -320,9 +290,11 @@ final telefon = new
  
    IconButton(icon:Icon(Icons.chat),color: Color(0xff883997),iconSize: 60.0,onPressed: (){ }
   );
-  void _onMapCreated(GoogleMapController controller) {
-    
-    setState(() {
+
+/*Función: _onMapCreated()
+Descripcion: Actualizacion del mapa*/  
+void _onMapCreated(GoogleMapController controller) {
+  setState(() {
       mapController = controller;
       mapController.animateCamera( CameraUpdate.newCameraPosition( CameraPosition(
         target : LatLng(latitude_user, longitude_user),zoom:15,
@@ -334,7 +306,4 @@ final telefon = new
       
     });
   }
- 
- 
- 
 }
