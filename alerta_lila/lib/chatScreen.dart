@@ -91,10 +91,13 @@ class ChatScreenState extends State<ChatScreen> {
     if (_chatController.text.isNotEmpty){
       Database.createMessage(text,name);
       setState(() {
+        
           _scrollController.animateTo(
-              _scrollController.position.maxScrollExtent+10.0,            curve: Curves.easeOut,
+            
+              _scrollController.position.maxScrollExtent+100.0,            curve: Curves.easeOut,
               duration: const Duration(milliseconds: 300),
             );
+            _chatController.clear();
       });
     }
 }
