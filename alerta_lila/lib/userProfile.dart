@@ -9,7 +9,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'main.dart';
-import 'usuaria.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'userButton.dart';
 import 'IncidenceList.dart';
@@ -50,9 +49,10 @@ class _MyHomePageState extends State<MyHomePage> {
   var userEmail = "";
   double _width = 50;
   double _height = 50;
- int _selectedIndex = 1;
+  int _selectedIndex = 1;
   String _imageUrl = "";
-  Usuaria profile = Usuaria("","","","");
+  String email = "";
+  String imageUrl = "";
 
 /*Función: _getUserId()
 Descripcion: Obtener el Id de Usuaria*/
@@ -79,7 +79,7 @@ _getEmail() async{
     String user = await _getUserId();
     String email = await Database.getUserData(user); 
     setState(() {
-      profile.email = email; 
+      email = email; 
     });
    }
 
@@ -90,7 +90,7 @@ String id = await _getUserId();
 var image = await ImagePicker.pickImage(source: ImageSource.gallery);
 _image = image;
 Database.uploadImage(_image,id);
-profile.imageUrl = await Database.downloadImage(id);
+  imageUrl = await Database.downloadImage(id);
 
 }
 
