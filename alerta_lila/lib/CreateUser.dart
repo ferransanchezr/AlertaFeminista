@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'UserList.dart';
 import 'database.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(CreateUser());
 
@@ -17,8 +18,8 @@ class CreateUser extends StatelessWidget {
     return MaterialApp(
       title: appTitle,
       home: Scaffold(
-        appBar: AppBar(
-          backgroundColor: Colors.purple[300],
+        appBar: GradientAppBar(
+          gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
           title: Text(appTitle),
         ),
         backgroundColor: Colors.purple[300],

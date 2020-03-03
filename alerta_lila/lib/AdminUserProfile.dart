@@ -13,6 +13,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:image_picker/image_picker.dart';
 import 'main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(new AdminUserProfile());
 
@@ -26,7 +27,8 @@ class AdminUserProfile extends StatelessWidget {
     return new MaterialApp(
       title: 'Perfil usuària',
       theme: new ThemeData(
-        primarySwatch: Colors.purple,
+        primarySwatch: Colors.purple
+        ,
       ),
       home: new MyHomePage(title: 'Perfil usuària'),
     );
@@ -124,11 +126,11 @@ class _MyHomePageState extends State<MyHomePage> {
       color:  Colors.purple[300].withOpacity(0.9),
       ),)),
       new Scaffold(
-          appBar: new AppBar(
+          appBar: new GradientAppBar(
             title: new Text(widget.title),
             centerTitle: false,
             elevation: 0.0,
-            backgroundColor: Colors.transparent,
+             gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
             actions: <Widget>[
             IconButton(
               icon: Icon(Icons.power_settings_new),

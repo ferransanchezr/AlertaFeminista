@@ -9,6 +9,7 @@ import 'database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
   
 void main() => runApp(RealTimeLocationAdmin());
 
@@ -263,7 +264,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
         ),
         subtitle: Row(
           children: <Widget>[
-            Icon(Icons.query_builder, color: Colors.purple[300]),
+            Icon(Icons.query_builder, color: Colors.purpleAccent),
             Text('  '+document['created'], style: TextStyle(color: Colors.grey))
           ],
         ),
@@ -286,9 +287,9 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
    return Scaffold(
      floatingActionButton:
      _floatChatButton(),
-        appBar: AppBar(
+        appBar: GradientAppBar(
           title: Text("Incidencia"),
-          backgroundColor: Colors.purple[300],
+          gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
            actions:  <Widget>[
              Switch(
                 value: incidenceSwitch,
@@ -334,7 +335,8 @@ final duradaAtencio = new Container(
   child: new Text("00:00:00")
   );
 final telefon = new IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
-final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,);
+final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: () {},);
+
 
 /*Función: _onMapCreated()
 Descripcion: Actualizacion del mapa*/  

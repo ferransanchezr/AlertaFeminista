@@ -6,6 +6,7 @@ import 'RealTimeLocationOff.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
 import 'userButton.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 import 'userProfile.dart';
 
 void main() => runApp(List());
@@ -76,9 +77,9 @@ _getIncidenceId() async{
   Widget build(BuildContext context) {
     
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Historial d'Incidències"),
-          backgroundColor: Colors.purple[300],
+        appBar: GradientAppBar(
+          title: Text("Historial de casos"),
+           gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
         ),
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").where("id",isEqualTo: userName).snapshots() ,

@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'AdminUserProfile.dart';
-
+import 'IncidenceGraph.dart';
 import 'CreateUser.dart';
 import 'IncidenceActiveList.dart';
 import 'IncidenceAdminList.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(UserList());
 
@@ -81,9 +82,9 @@ _getIncidenceId() async{
           Navigator.push(this.context,MaterialPageRoute(builder: (context) => CreateUser()),);
         },
       ),
-        appBar: AppBar(
+        appBar: GradientAppBar(
           title: Text("Usuàries"),
-          backgroundColor: Colors.purple[300],
+          gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
         ),
         
         body:  StreamBuilder(
@@ -131,7 +132,8 @@ _getIncidenceId() async{
                   BottomNavigationBarItem(icon: Icon(Icons.restore), title: Text('Historial') ),
                   BottomNavigationBarItem(icon: Icon(Icons.list), title: Text('Actives')),
                   BottomNavigationBarItem(icon: Icon(Icons.person), title: Text('Perfil')),
-                  BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('Usuàries'))
+                  BottomNavigationBarItem(icon: Icon(Icons.people), title: Text('Usuàries')),
+                  
                 ],
                 currentIndex: 3,
                 fixedColor: Color(0xff883997),
@@ -159,8 +161,8 @@ Descripcion: navegación del menu */
         Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => AdminUserProfile()),);
       }
       break;
-      case 2: {
-        
+      case 4: {
+        //Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => BarChartSample4()),);
       }
       break;
     }

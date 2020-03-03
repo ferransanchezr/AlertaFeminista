@@ -9,6 +9,7 @@ import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
 import 'package:permission/permission.dart';
 import 'package:flutter_crashlytics/flutter_crashlytics.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(MyApp());
 
@@ -39,7 +40,7 @@ class MyApp extends StatelessWidget {
         },  
       title: '',
       theme: ThemeData(
-        primarySwatch: Colors.purple,
+       // primarySwatch: Colors.purple,
       ),
       home: MyHomePage(title:'' ),
     );
@@ -175,9 +176,11 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
+        appBar: GradientAppBar(
+        
         title: Text(DemoLocalizations.of(context).trans('title')),
-        backgroundColor: Colors.purpleAccent,
+        gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
+        
       ),
     body:  new Center(child: CircularProgressIndicator(), )
   );

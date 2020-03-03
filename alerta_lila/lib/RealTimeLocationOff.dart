@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threading/threading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
   
 void main() => runApp(RealTimeLocationOff());
 
@@ -244,9 +245,9 @@ void _launchMapsUrl(double lat, double lon) async {
           Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);
         },
       ),
-        appBar: AppBar(
+        appBar: GradientAppBar(
           title: Text("Incidencia"),
-           backgroundColor: Colors.purple[300],
+           gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
             actions:  <Widget>[
              
            ] 
@@ -276,8 +277,7 @@ final duradaAtencio = new Container(
   child: new Text("00:00:00")
   );
 final telefon = new IconButton(icon:Icon(Icons.phone),color: Color(0xff883997),iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
-final chat = IconButton(icon:Icon(Icons.chat),color: Color(0xff883997),iconSize: 60.0,
-  );
+final chat = IconButton(icon:Icon(Icons.chat),color: Color(0xff883997),iconSize: 60.0,onPressed: () {});
 
   /*Función: _onMapCreated()
 Descripcion: Actualizacion del mapa*/  

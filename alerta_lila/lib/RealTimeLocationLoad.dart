@@ -8,6 +8,7 @@ import 'database.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'RealTimeLocationOff.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
   
 void main() => runApp(RealTimeLocationLoad());
 
@@ -208,8 +209,9 @@ void _launchMapsUrl(double lat, double lon) async {
   @override
 Widget build(context) {
    return Scaffold(
-        appBar: AppBar(
+        appBar: GradientAppBar(
           title: Text("Incidencia"),
+          gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
         ),
         body: StreamBuilder(
           stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,

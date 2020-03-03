@@ -7,6 +7,7 @@ import 'package:threading/threading.dart';
 import 'IncidenceList.dart';
 import 'Database.dart';
 import 'RealTimeLocation.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 import 'userProfile.dart';
 
 void main() => runApp(UserButtonEmergency());
@@ -43,9 +44,9 @@ class _Button extends State<UserButtonEmergency> {
   Widget build(BuildContext context) {
 
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: Text('Botó alerta'),
-        backgroundColor: Colors.purple[300],
+        gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
       ),
       body:  Center(
         child:new Container( 

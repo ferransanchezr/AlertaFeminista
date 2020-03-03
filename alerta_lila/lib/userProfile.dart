@@ -12,6 +12,7 @@ import 'main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'userButton.dart';
 import 'IncidenceList.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 
 void main() => runApp(new UserProfile());
@@ -137,11 +138,11 @@ Descripcion: Cerrar session de Usuario */
       
       ),)),
       new Scaffold(
-          appBar: new AppBar(
+          appBar: new GradientAppBar(
             title: new Text(widget.title),
             centerTitle: false,
             elevation: 0.0,
-            backgroundColor: Colors.transparent,
+            gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
             actions: <Widget>[
             // action button
             IconButton(

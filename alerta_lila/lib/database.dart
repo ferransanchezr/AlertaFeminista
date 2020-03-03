@@ -24,6 +24,8 @@ class Database {
     .snapshots()
     .listen((data) =>
         data.documents.forEach((doc) {
+
+          
            open = doc['open'];
           prefs.setString("state", doc['open']);
         return open.toString();
@@ -349,6 +351,25 @@ static Future<String> getUserName( String uid) async {
   prefs.setString("UserName", user);
   return user;   
 }
+/* Function: getUserName()
+  Descripcion: Obtiene el nombre del usuario*/
+ static getIncidentList() async {
+  List<List<String>> lista = List<List<String>>() ;
+   Firestore.instance
+    .collection('Incidencias')
+    .where("open",isEqualTo: "false")
+    .snapshots()
+    .listen((data) =>
+        data.documents.forEach((doc) {
+          
+          lista.add(<String>[doc['created'],doc['name'], doc['longitude']]);
+              
+        }
+      ));
+      
+   return lista;
+}
+
 
 /* Function: getAdmin()
 Descripcion: Obtiene si el usuario autenticado es un administrador */

@@ -8,6 +8,9 @@ import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
 import 'AdminuserProfile.dart';
 import 'IncidenceActiveList.dart';
+import 'IncidenceToPdf.dart';
+import 'IncidenceGraph.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(AdminList());
 
@@ -74,9 +77,24 @@ Descripcion: Widget principal amb la consulta a la bd*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Historial d'incidències"),
-          backgroundColor: Colors.purple[300],
+        appBar: GradientAppBar(
+          title: Text("Historial de casos"),
+           gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
+           actions: <Widget>[
+            // action button
+            IconButton(
+              icon: Icon(Icons.picture_as_pdf),
+              onPressed: () {
+                toPdf();
+              },
+            ),
+            IconButton(
+              icon: Icon(Icons.insert_chart),
+              onPressed: () {
+               Navigator.pushReplacement(context,MaterialPageRoute(builder: (context) => BarChartSample4()),);
+              },
+            ),
+            ],
         ),
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "false").snapshots() ,

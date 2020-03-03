@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'AdminUserProfile.dart';
 import 'database.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(EditUser());
 
@@ -185,9 +186,9 @@ Descripcion: Widget principal amb la consulta a la bd*/
 @override
 Widget build(BuildContext context) {
   return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: Text("Creació d'una nova usuària"),
-        backgroundColor: Colors.purple[300],
+         gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
       ),
       body: 
       StreamBuilder(stream:  Firestore.instance.collection('Usuarias').where("email",isEqualTo: userEmail).snapshots() ,

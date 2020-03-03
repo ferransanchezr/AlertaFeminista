@@ -9,6 +9,7 @@ import 'UserList.dart';
 import 'database.dart';
 import 'package:flutter\_localizations/flutter\_localizations.dart';
 import 'localizationDelegate.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(ActiveList());
 
@@ -79,9 +80,9 @@ Descripcion: Widget principal amb la consulta a la bd*/
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text("Incidències actives"),
-          backgroundColor: Colors.purple[300],
+        appBar: GradientAppBar(
+          title: Text("Casos actius"),
+         gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
         ),
         body:  StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("open",isEqualTo: "true").snapshots() ,

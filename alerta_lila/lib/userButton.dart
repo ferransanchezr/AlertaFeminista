@@ -7,6 +7,7 @@ import 'IncidenceList.dart';
 import 'Database.dart';
 import 'RealTimeLocation.dart';
 import 'userProfile.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
 
 void main() => runApp(UserButton());
 
@@ -37,9 +38,9 @@ class _Button extends State<UserButton> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      appBar: GradientAppBar(
         title: Text('Botó alerta'),
-        backgroundColor: Colors.purple[300],
+       gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
       ),
       body:  Center(
         child:new Container( 

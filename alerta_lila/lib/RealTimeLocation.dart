@@ -10,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:threading/threading.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'chat.dart';
+import 'package:gradient_app_bar/gradient_app_bar.dart';
   
 void main() => runApp(RealTimeLocation());
 
@@ -240,7 +241,7 @@ Widget _buildListItem(BuildContext context,DocumentSnapshot document){
           ),
           subtitle: Row(
             children: <Widget>[
-              Icon(Icons.query_builder, color: Colors.purple[300]),
+              Icon(Icons.query_builder, color: Colors.purpleAccent),
               Text('  '+document['created'], style: TextStyle(color: Colors.grey))
             ],
           ),
@@ -279,10 +280,14 @@ void _launchMapsUrl(double lat, double lon) async {
           Navigator.push(this.context,MaterialPageRoute(builder: (context) => chatPage()),);
         },
       ),
-        appBar: AppBar(
-          title: Text("Incidència"),
-          backgroundColor: Colors.purple[300],
-        ),
+        appBar: GradientAppBar(
+        
+        title: Text("Incidència"),
+        gradient: LinearGradient(colors:[Colors.purple,Colors.purpleAccent]),
+        
+      ),
+          
+        
         body: StreamBuilder(
                 stream: Firestore.instance.collection('Incidencias').where("unique_id",isEqualTo: incidenceId).snapshots() ,
                  builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot){
@@ -314,7 +319,7 @@ final telefon =
    new
    IconButton(icon:Icon(Icons.phone),color: Colors.purple,iconSize: 60.0, onPressed:()=> launch("tel://695745855"),);
 
-final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0);
+final chat = new IconButton(icon:Icon(Icons.chat),color: Colors.purple,iconSize: 60.0,onPressed: () {},);
 
 /*Función: _onMapCreated()
 Descripcion: Actualizacion del mapa*/  
