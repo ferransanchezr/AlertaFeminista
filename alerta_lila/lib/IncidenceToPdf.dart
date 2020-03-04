@@ -14,7 +14,7 @@ Future toPdf() async{
   final Document pdf = Document();
   //poner el stream builder aki
  
-
+// mirar el packqge printing 3.1.0
   pdf.addPage(
     MultiPage( build: (Context context) {
       StreamBuilder(
